@@ -1,4 +1,4 @@
-FROM sagemath/sagemath:9.8
+FROM sagemath/sagemath-dev:9.8
 
 USER root
 ENV DEBIAN_FRONTEND=noninteractive
