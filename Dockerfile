@@ -1,5 +1,4 @@
-# Use the Debian-based Sage image (this one supports apt-get)
-FROM sagemath/sagemath:9.8-debian
+FROM sagemath/sagemath:9.8
 
 USER root
 ENV DEBIAN_FRONTEND=noninteractive
