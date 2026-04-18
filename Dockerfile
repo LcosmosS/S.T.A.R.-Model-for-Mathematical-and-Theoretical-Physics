@@ -1,23 +1,26 @@
-# Dockerfile — use official Sage image, install Cremona DB and your repos
+# — sagemath base, install build tools, install Cremona DB, clone repos
 FROM sagemath/sagemath:latest
 
-# install system tools you may need (git, wget)
 USER root
-RUN apt-get update && apt-get install -y --no-install-recommends git wget && rm -rf /var/lib/apt/lists/*
+
+# install minimal build tools required by sage -i database_cremona_ellcurve
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential make wget ca-certificates git \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt
 
-# install full Cremona DB (runs inside the container's Sage)
+# install full Cremona DB (this downloads/builds data; may take time and disk)
 RUN sage -i database_cremona_ellcurve
 
-# clone and install eclib and ecdata (adjust if you prefer to mount)
-RUN git clone https://github.com/JohnCremona/eclib.git /opt/eclib && \
-    git clone https://github.com/JohnCremona/ecdata.git /opt/ecdata
+# clone John Cremona repos (optional; you can mount your local copies instead)
+RUN git clone https://github.com/JohnCremona/eclib.git /opt/eclib || true && \
+    git clone https://github.com/JohnCremona/ecdata.git /opt/ecdata || true
 
-# If eclib has a Python install step, install it into Sage's python
+# install eclib into Sage's python if it provides a Python package (adjust if needed)
 RUN sage -python -m pip install --no-cache-dir /opt/eclib || true
 
-# Python deps for your project (adjust list)
+# project deps (adjust list to your needs)
 RUN sage -python -m pip install --no-cache-dir numpy pandas tqdm scikit-learn gudhi ripser
 
 WORKDIR /workspace
