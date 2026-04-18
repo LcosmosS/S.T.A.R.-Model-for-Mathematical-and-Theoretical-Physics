@@ -1,42 +1,27 @@
-FROM ubuntu:22.04
+# Dockerfile — use official Sage image, install Cremona DB and your repos
+FROM sagemath/sagemath:latest
 
-ENV DEBIAN_FRONTEND=noninteractive
-ARG SAGE_VERSION=10.7
-ARG SAGE_TARBALL_URL=https://mirrors.mit.edu/sage/src/sage-${SAGE_VERSION}.tar.gz
-ENV PATH=/opt/sage-${SAGE_VERSION}/local/bin:$PATH
-
-# system deps
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential m4 git wget ca-certificates python3 python3-dev python3-distutils \
-    gfortran libssl-dev libffi-dev libgmp-dev libmpfr-dev libmpc-dev \
-    libblas-dev liblapack-dev libboost-all-dev libreadline-dev libncurses5-dev \
-    libbz2-dev zlib1g-dev liblzma-dev pkg-config curl bzip2 xz-utils \
-    && rm -rf /var/lib/apt/lists/*
+# install system tools you may need (git, wget)
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends git wget && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt
 
-# download and extract Sage source
-RUN wget -qO sage-src.tar.gz "${SAGE_TARBALL_URL}" && \
-    tar -xzf sage-src.tar.gz && \
-    rm sage-src.tar.gz
+# install full Cremona DB (runs inside the container's Sage)
+RUN sage -i database_cremona_ellcurve
 
-WORKDIR /opt/sage-${SAGE_VERSION}
+# clone and install eclib and ecdata (adjust if you prefer to mount)
+RUN git clone https://github.com/JohnCremona/eclib.git /opt/eclib && \
+    git clone https://github.com/JohnCremona/ecdata.git /opt/ecdata
 
-# configure Sage (REQUIRED for 10.7+)
-RUN ./configure
+# If eclib has a Python install step, install it into Sage's python
+RUN sage -python -m pip install --no-cache-dir /opt/eclib || true
 
-# build Sage
-RUN make -j$(nproc)
-
-# install full Cremona DB
-RUN ./sage -i database_cremona_ellcurve
-
-# python deps for ACSC
-RUN ./sage -python -m pip install --no-cache-dir numpy pandas tqdm scikit-learn gudhi ripser
+# Python deps for your project (adjust list)
+RUN sage -python -m pip install --no-cache-dir numpy pandas tqdm scikit-learn gudhi ripser
 
 WORKDIR /workspace
-RUN mkdir -p /workspace && chmod -R a+rX /workspace
-
+VOLUME ["/workspace"]
 EXPOSE 8888
 
-CMD ["bash", "-lc", "./sage -python -m jupyterlab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='acsc2026'"]
+CMD ["bash", "-lc", "sage -python -m jupyterlab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='acsc2026'"]
