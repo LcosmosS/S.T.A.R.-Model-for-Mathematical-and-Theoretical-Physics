@@ -1,5 +1,6 @@
 # Save this as parse_cremona_chunks.py in your repo and run it on the host. 
 #It reads cremona_db_copy/cremona/curvedata/* (or curvedata.gz) and writes cremona_raw_parsed.csv with parsed fields and the raw line.
+# python3 parse_cremona_chunks.py
 
 # parse_cremona_chunks.py
 import os, gzip, csv, re, sys
