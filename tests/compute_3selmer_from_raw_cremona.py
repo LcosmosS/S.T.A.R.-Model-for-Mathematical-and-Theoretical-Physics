@@ -7,7 +7,7 @@ import traceback
 from tqdm import tqdm
 
 # ============== CONFIG ==============
-IN = "cremona_raw_parsed.csv"          # or "cremona_raw_parsed.csv"
+IN = "cremona_raw_parsed.csv"          # or "lmfdb_raw_parsed.csv"
 OUT = "cremona_3selmer_full_pari.csv"
 RESUME_FROM_LABEL = None             # set to resume, e.g. "9990.p1"
 BATCH_FLUSH = 1000
