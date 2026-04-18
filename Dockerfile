@@ -50,6 +50,14 @@ RUN mkdir -p /usr/local/share/sage/databases && \
     rm /tmp/cremona_db.tar.gz && \
     chmod -R a+rX /usr/local/share/sage/databases/cremona
 
+# Copy the Cremona DB tarball into the image
+COPY cremona_db.tar.gz /tmp/cremona_db.tar.gz
+
+# Extract it into Sage’s database directory
+RUN mkdir -p /usr/local/share/sage/databases && \
+    tar -xzf /tmp/cremona_db.tar.gz -C /usr/local/share/sage/databases && \
+    rm /tmp/cremona_db.tar.gz && \
+    chmod -R a+rX /usr/local/share/sage/databases/cremona
 
 # Project workspace
 WORKDIR /workspace
