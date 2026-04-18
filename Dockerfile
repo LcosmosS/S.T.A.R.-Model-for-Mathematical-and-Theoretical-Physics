@@ -43,6 +43,14 @@ RUN if [ -f /opt/lmfdb/setup.py ] || [ -f /opt/lmfdb/pyproject.toml ]; then \
       echo "LMFDB repo has no installable package metadata; use it as source in /opt/lmfdb"; \
     fi
 
+# copy and extract prebuilt cremona DB into Sage DB dir
+COPY cremona_db.tar.gz /tmp/cremona_db.tar.gz
+RUN mkdir -p /usr/local/share/sage/databases && \
+    tar -xzf /tmp/cremona_db.tar.gz -C /usr/local/share/sage/databases && \
+    rm /tmp/cremona_db.tar.gz && \
+    chmod -R a+rX /usr/local/share/sage/databases/cremona
+
+
 # Project workspace
 WORKDIR /workspace
 RUN mkdir -p /workspace && chmod -R a+rX /workspace
