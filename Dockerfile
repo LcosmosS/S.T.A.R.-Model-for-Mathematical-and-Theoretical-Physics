@@ -26,9 +26,6 @@ RUN mkdir -p /usr/local/share/sage/databases && \
     fi && \
     chmod -R a+rX /usr/local/share/sage/databases/cremona || true
 
-ENV SAGE_DATABASES=/usr/local/share/sage/databases
-ENV PYTHONNOUSERSITE=1
-
 # Install eclib if it exposes a Python package (best-effort)
 RUN sage -python -m pip install --no-cache-dir /opt/eclib || true
 
@@ -54,6 +51,9 @@ RUN mkdir -p /usr/local/share/sage/databases && \
     tar -xzf /tmp/cremona_db.tar.gz -C /usr/local/share/sage/databases && \
     rm /tmp/cremona_db.tar.gz && \
     chmod -R a+rX /usr/local/share/sage/databases/cremona
+
+ENV SAGE_DATABASES=/usr/local/share/sage/databases
+ENV PYTHONNOUSERSITE=1
 
 # Project workspace
 WORKDIR /workspace
