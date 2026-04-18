@@ -48,10 +48,11 @@ RUN if [ -f /opt/lmfdb/setup.py ] || [ -f /opt/lmfdb/pyproject.toml ]; then \
 # COPY cremona_db.tar.gz /tmp/cremona_db.tar.gz
 
 # Extract it into Sage’s database directory
-RUN mkdir -p /usr/local/share/sage/databases && \
-    tar -xzf /tmp/cremona_db.tar.gz -C /usr/local/share/sage/databases && \
-    rm /tmp/cremona_db.tar.gz && \
-    chmod -R a+rX /usr/local/share/sage/databases/cremona
+# uncomment for local installation
+# RUN mkdir -p /usr/local/share/sage/databases && \
+#    tar -xzf /tmp/cremona_db.tar.gz -C /usr/local/share/sage/databases && \
+#    rm /tmp/cremona_db.tar.gz && \
+#    chmod -R a+rX /usr/local/share/sage/databases/cremona
 
 ENV SAGE_DATABASES=/usr/local/share/sage/databases
 ENV PYTHONNOUSERSITE=1
