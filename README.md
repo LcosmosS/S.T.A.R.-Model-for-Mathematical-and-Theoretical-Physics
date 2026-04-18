@@ -1,7 +1,9 @@
 
 
 # **Arithmetic–Cosmic Structure Conjecture (ACSC) — Reproducible Pipeline**
-
+---
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/LcosmosS/Arithmetic-Cosmic-Structure-Conjecture-ACSC-.git/HEAD)
+---
 This repository contains the full computational framework for testing the **Arithmetic–Cosmic Structure Conjecture (ACSC)**: a proposed structural correspondence between the arithmetic invariants of elliptic curves over ℚ and the large‑scale topology of cosmic structure.
 
 The code, data pipeline, and documentation here implement the preregistered falsification protocol described in the manuscript *“The Arithmetic–Cosmic Structure Conjecture (ACSC)”*. All steps—from data ingestion to projection, quantile alignment, TDA computation, null models, and statistical testing—are fully reproducible.
