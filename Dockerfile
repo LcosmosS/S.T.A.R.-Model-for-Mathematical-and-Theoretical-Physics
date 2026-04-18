@@ -52,6 +52,9 @@ RUN mkdir -p /usr/local/share/sage/databases && \
     rm /tmp/cremona_db.tar.gz && \
     chmod -R a+rX /usr/local/share/sage/databases/cremona
 
+ENV SAGE_DATABASES=/usr/local/share/sage/databases
+ENV PYTHONNOUSERSITE=1
+
 # Project workspace
 WORKDIR /workspace
 RUN mkdir -p /workspace && chmod -R a+rX /workspace
