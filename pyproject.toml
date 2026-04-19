@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "acsc"
+version = "0.0.0"
+description = "ACSC utilities for projection, quantile alignment, and TDA pipelines"
+authors = [{name = "Your Name"}]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+
+dependencies = [
+  "numpy>=1.26.0,<2.0",
+  "pandas>=2.2.0,<3.0",
+  "scipy>=1.11.0,<2.0"
+]
+
+[project.optional-dependencies]
+tda = ["gudhi==3.5.1", "ripser==0.6.2", "persim==0.6.0"]
+dev = ["pytest", "black", "isort", "pre-commit"]
