@@ -1,4 +1,4 @@
-- name: Tests
+name: Tests
 
 on: [push, pull_request]
 
@@ -28,9 +28,7 @@ jobs:
           cd Arithmetic-Cosmic-Structure-Conjecture-ACSC
           pytest tests/ --cov=acsc
 
-
       - name: Check code style
-          run: |
-            cd Arithmetic-Cosmic-Structure-Conjecture-ACSC
-            black --check acsc/ tests/
-
+        run: |
+          cd Arithmetic-Cosmic-Structure-Conjecture-ACSC
+          black --check acsc/ tests/
