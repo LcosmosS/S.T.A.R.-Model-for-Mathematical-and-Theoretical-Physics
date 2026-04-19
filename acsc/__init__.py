@@ -1,8 +1,5 @@
 #!/bin/bash
-set -e
 
-echo "🔧 Step 1: Fix acsc/__init__.py..."
-cat > acsc/__init__.py << 'EOF'
 """
 ACSC: Arithmetic–Cosmic Structure Conjecture computational framework.
 
