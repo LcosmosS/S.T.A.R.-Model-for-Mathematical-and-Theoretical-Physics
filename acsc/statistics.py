@@ -13,7 +13,6 @@ def empirical_p_value(observed, samples):
     """
     samples = np.array([10,20,30,40,50])
     observed = 0
-    print(empirical_p_value(observed, samples))
     n = len(samples)
     if n == 0:
         return 1.0
