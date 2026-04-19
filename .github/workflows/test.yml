@@ -11,15 +11,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-     
-      # after actions/setup-python@v5
-      - name: Check code style (py310)
-        if: matrix.python-version == '3.10'
-        run: black --check --target-version py310 acsc/ tests/
-
-      - name: Check code style (py311)
-        if: matrix.python-version == '3.11'
-        run: black --check --target-version py311 acsc/ tests/
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -29,44 +20,33 @@ jobs:
       - name: Install dependencies
         run: pip install -e ".[dev]"
 
+      - name: Check code style (py310)
+        if: ${{ matrix.python-version == '3.10' }}
+        run: black --check --target-version py310 acsc/ tests/
+
+      - name: Check code style (py311)
+        if: ${{ matrix.python-version == '3.11' }}
+        run: black --check --target-version py311 acsc/ tests/
+
       - name: Deep debug: workspace, pytest, black, python
         run: |
           echo "PWD: $(pwd)"
-          echo "Python:"
           python -V
-          python -c "import sys,site; print('sys.path:', sys.path); print('cwd:', __import__('os').getcwd())"
-          echo "Workspace listing (top 3 levels):"
-          find . -maxdepth 3 -type d -print -exec ls -la {} \; || true
-
-          echo "=== Find candidate test files ==="
-          find . -maxdepth 6 -type f \( -name "test_*.py" -o -name "*_test.py" \) -print -exec sed -n '1,120p' {} \; || true
-
-          echo "=== pyproject.toml (first 200 lines) ==="
+          echo "Listing top-level files:"
+          ls -la
+          echo "Find candidate test files:"
+          find . -maxdepth 5 -type f \( -name "test_*.py" -o -name "*_test.py" \) -print || true
+          echo "pyproject.toml (first 200 lines):"
           sed -n '1,200p' pyproject.toml || true
-
-          echo "=== conftest.py (if present) ==="
-          if [ -f conftest.py ]; then sed -n '1,240p' conftest.py; else echo "no top-level conftest.py"; fi
-
-          echo "=== pytest config and plugins (trace-config) ==="
-          pytest -q --trace-config -k "" --collect-only -vv || true
-
-          echo "=== pytest collect-only ignoring config ==="
+          echo "Top-level conftest.py:"
+          ls -la conftest.py || true
+          echo "pytest collect-only (with config):"
+          pytest -q --collect-only -vv || true
+          echo "pytest collect-only (ignore config):"
           pytest -c /dev/null --collect-only -vv || true
 
-          echo "=== pytest collect-only disabling plugins (no cov) ==="
-          pytest -p no:cov --collect-only -vv || true
-
-          echo "=== run a forced test discovery on tests/ ==="
-          python -m pytest tests -q --collect-only -vv || true
-
-          echo "=== Black check (show version and target) ==="
-          black --version || true
-          black --check --verbose acsc/ tests/ || true
-
-
       - name: Run tests
-        run: |
-          pytest -q || true
+        run: pytest -q || true
 
-      - name: Check code style
-        run: black --check acsc/ tests/
+      - name: Check code style (final)
+        run: black --check acsc/ tests/ || true
