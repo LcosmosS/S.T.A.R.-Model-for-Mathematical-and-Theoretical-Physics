@@ -11,24 +11,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: Arithmetic-Cosmic-Structure-Conjecture-ACSC
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
+- name: Install dependencies
+  run: pip install -e ".[dev]"
 
-      - name: Install dependencies
-        run: |
-          cd Arithmetic-Cosmic-Structure-Conjecture-ACSC
-          pip install -e ".[dev]"
+- name: Run tests
+  run: pytest tests/ --cov=acsc
 
-      - name: Run tests
-        run: |
-          cd Arithmetic-Cosmic-Structure-Conjecture-ACSC
-          pytest tests/ --cov=acsc
+- name: Check code style
+  run: black --check acsc/ tests/
 
-      - name: Check code style
-        run: |
-          cd Arithmetic-Cosmic-Structure-Conjecture-ACSC
-          black --check acsc/ tests/
