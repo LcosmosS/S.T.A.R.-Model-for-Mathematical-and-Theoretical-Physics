@@ -1,103 +1,91 @@
-name=acsc/projection.py
-from typing import Dict, Iterable, Tuple
+from typing import Sequence, List, Dict, Any, Optional, Tuple
 import numpy as np
+import pandas as pd
 
-# --- Utilities --------------------------------------------------------------
-
-def _safe_log10(x, eps=1e-12):
+def _safe_log10(x: np.ndarray, floor: float = 1.0) -> np.ndarray:
+    """Compute log10 of absolute values with a floor to avoid -inf."""
     x = np.asarray(x, dtype=float)
-    return np.log10(np.maximum(np.abs(x), eps))
+    # replace non-finite and zeros with floor
+    mask = ~np.isfinite(x) | (x == 0)
+    out = np.empty_like(x)
+    out[mask] = np.log10(float(floor))
+    out[~mask] = np.log10(np.abs(x[~mask]))
+    return out
 
-# --- Primary projection (rank-normalized spherical embedding) ---------------
+def _scale_to_range(arr: np.ndarray, out_min: float, out_max: float) -> np.ndarray:
+    """Linearly scale arr to [out_min, out_max]. If constant, return midpoint."""
+    arr = np.asarray(arr, dtype=float)
+    if arr.size == 0:
+        return arr
+    mn = np.nanmin(arr)
+    mx = np.nanmax(arr)
+    if not np.isfinite(mn) or not np.isfinite(mx) or mn == mx:
+        return np.full_like(arr, 0.5 * (out_min + out_max))
+    scaled = (arr - mn) / (mx - mn)
+    return out_min + scaled * (out_max - out_min)
 
-def primary_projection(records: Iterable[Dict],
-                       Amax: float = 1e12,
-                       Nmax: float = 1e6,
-                       V0: float = 1.0) -> np.ndarray:
+def _saturating_rank_map(ranks: np.ndarray, v0: float = 1.0) -> np.ndarray:
+    """Map integer ranks to a bounded real axis using arctan-like saturation.
+    v0 controls the scale where saturation begins.
     """
-    Rank-normalized primary projection (¢_prim).
-    records: iterable of dict-like objects with required keys (see module docstring).
-    Returns: ndarray shape (n,3)
+    r = np.asarray(ranks, dtype=float)
+    # replace NaN with 0
+    r = np.nan_to_num(r, nan=0.0)
+    # use arctan to bound values between -pi/2 and pi/2, then rescale to [0,1]
+    mapped = np.arctan(r / float(v0)) / (0.5 * np.pi)
+    # mapped in [0,1); ensure finite
+    mapped = np.clip(mapped, 0.0, 1.0)
+    return mapped
+
+def project(records: Sequence[Dict[str, Any]],
+            method: str = "primary",
+            Amax: float = 1.0,
+            Nmax: float = 1.0,
+            V0: float = 1.0) -> np.ndarray:
     """
-    recs = list(records)
-    n = len(recs)
-    coords = np.zeros((n, 3), dtype=float)
+    Convert a sequence of record dicts into Nx3 coordinates.
 
-    for i, r in enumerate(recs):
-        delta = r.get("delta", 1)
-        N = r.get("conductor", 1)
-        rank = int(r.get("rank", 0))
-        R = float(r.get("regulator", 1.0))
-        Q = float(r.get("real_period", 1.0))
-        T = int(r.get("torsion_order", 1))
+    Parameters
+    - records: sequence of dict-like objects with keys 'delta', 'conductor', 'rank'
+    - method: 'primary'|'ptd'|'mcj' (kept for API compatibility; same mapping here)
+    - Amax, Nmax, V0: scaling parameters used in mapping
 
-        # radial coordinate V_E (rank-normalized)
-        Wr = 2 * rank * (rank + 1)
-        denom = max(1, rank)
-        radial = V0 * (T * np.log(max(Q, 1e-12) / 2.0) * (R ** (1.0 / denom))) * np.exp(Wr)
+    Returns
+    - coords: numpy array shape (n,3)
+    """
+    if records is None:
+        return np.zeros((0, 3), dtype=float)
 
-        # angular coordinates (wrapped logs)
-        theta = np.mod(_safe_log10(delta) / np.log10(max(Amax, 10.0)), 2 * np.pi)
-        phi = np.mod(np.pi * _safe_log10(N) / np.log10(max(Nmax, 10.0)), np.pi)
+    # Convert to DataFrame for robust column handling
+    df = pd.DataFrame.from_records(records)
+    n = len(df)
+    if n == 0:
+        return np.zeros((0, 3), dtype=float)
 
-        # spherical -> cartesian
-        x = radial * np.sin(theta) * np.cos(phi)
-        y = radial * np.sin(theta) * np.sin(phi)
-        z = radial * np.cos(theta)
+    # Ensure columns exist
+    for col in ["delta", "conductor", "rank"]:
+        if col not in df.columns:
+            df[col] = np.nan
 
-        coords[i, :] = (x, y, z)
+    # Coerce numeric
+    df["delta"] = pd.to_numeric(df["delta"], errors="coerce")
+    df["conductor"] = pd.to_numeric(df["conductor"], errors="coerce")
+    df["rank"] = pd.to_numeric(df["rank"], errors="coerce")
 
+    # X: log10|delta| scaled to [0, Amax]
+    logd = _safe_log10(df["delta"].to_numpy(), floor=1.0)
+    x = _scale_to_range(logd, 0.0, float(Amax))
+
+    # Y: log10(conductor) scaled to [0, Nmax]; treat conductor<=1 as floor
+    cond = df["conductor"].to_numpy()
+    cond_safe = np.where(np.isfinite(cond) & (cond > 0), cond, 1.0)
+    logn = _safe_log10(cond_safe, floor=1.0)
+    y = _scale_to_range(logn, 0.0, float(Nmax))
+
+    # Z: rank mapped via saturating transform and scaled to [0,1] then to [0,1]*V0
+    rank_map = _saturating_rank_map(df["rank"].to_numpy(), v0=float(V0))
+    z = rank_map * float(V0)
+
+    coords = np.vstack([x, y, z]).T
+    # If method variants are needed, you can branch here; for now return same coords
     return coords
-
-# --- Alternative projection PTD ---------------------------------------------
-
-def projection_ptd(records: Iterable[Dict]) -> np.ndarray:
-    """
-    PTD alternative: (log|delta|, log(conductor), log(1+|torsion|))
-    """
-    recs = list(records)
-    n = len(recs)
-    coords = np.zeros((n, 3), dtype=float)
-    for i, r in enumerate(recs):
-        coords[i, 0] = _safe_log10(r.get("delta", 1))
-        coords[i, 1] = np.log1p(max(int(r.get("conductor", 1)), 0))
-        coords[i, 2] = np.log1p(abs(int(r.get("torsion_order", 0))))
-    return coords
-
-# --- Alternative projection MCJ ---------------------------------------------
-
-def projection_mcj(records: Iterable[Dict]) -> np.ndarray:
-    """
-    MCJ alternative: (log(conductor), log(j-invariant proxy), log(1+regulator))
-    Note: j-invariant is not always available; use a placeholder or precomputed j if present.
-    """
-    recs = list(records)
-    n = len(recs)
-    coords = np.zeros((n, 3), dtype=float)
-    for i, r in enumerate(recs):
-        N = max(int(r.get("conductor", 1)), 1)
-        j = r.get("j_invariant", None)
-        if j is None:
-            j_proxy = float(r.get("delta", 1)) / float(N)
-        else:
-            j_proxy = float(j)
-        coords[i, 0] = np.log1p(N)
-        coords[i, 1] = _safe_log10(j_proxy)
-        coords[i, 2] = np.log1p(float(r.get("regulator", 0.0)))
-    return coords
-
-# --- Batch dispatcher -------------------------------------------------------
-
-def project(records: Iterable[Dict], method: str = "primary", **kwargs) -> np.ndarray:
-    """
-    Dispatch to a projection method. method in {"primary","ptd","mcj"}.
-    """
-    method = method.lower()
-    if method == "primary":
-        return primary_projection(records, **kwargs)
-    elif method == "ptd":
-        return projection_ptd(records)
-    elif method == "mcj":
-        return projection_mcj(records)
-    else:
-        raise ValueError(f"Unknown projection method: {method}")
