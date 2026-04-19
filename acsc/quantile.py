@@ -1,4 +1,4 @@
-import numpy as np
+mport numpy as np
 import json
 from pathlib import Path
 
@@ -59,7 +59,7 @@ class QuantileAligner:
     """Fit on ref_coords and transform src_coords in one step."""
     self.fit(ref_coords, n_quantiles=n_quantiles)
     return self.transform(src_coords)
-    
+
     
     def save(self, path):
         d = {"quantiles": self._quantiles, "axis_maps": self._axis_maps}
