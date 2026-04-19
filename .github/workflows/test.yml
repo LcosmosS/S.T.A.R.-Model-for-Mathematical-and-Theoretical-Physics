@@ -12,64 +12,35 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
       - name: Install dependencies
         run: pip install -e ".[dev]"
 
       - name: Debug pytest collection
-    run: |
-      echo "PWD: $(pwd)"
-      echo "Repo root listing:"
-      ls -la
-      echo "Top-level tests dir:"
-      ls -la tests || true
-      echo "Find candidate test files:"
-      find . -maxdepth 5 -type f \( -name "test_*.py" -o -name "*_test.py" \) -print || true
-      echo "pyproject.toml (first 200 lines):"
-      sed -n '1,200p' pyproject.toml || true
-      echo "conftest.py present?"
-      ls -la conftest.py || true
-      echo "pytest collect-only (with config):"
-      pytest -q --collect-only -vv || true
-      echo "pytest collect-only (ignore config):"
-      pytest -c /dev/null --collect-only -vv || true
+        run: |
+          echo "PWD: $(pwd)"
+          echo "Repo root listing:"
+          ls -la
+          echo "Top-level tests dir:"
+          ls -la tests || true
+          echo "Find candidate test files:"
+          find . -maxdepth 5 -type f \( -name "test_*.py" -o -name "*_test.py" \) -print || true
+          echo "pyproject.toml (first 200 lines):"
+          sed -n '1,200p' pyproject.toml || true
+          echo "conftest.py present?"
+          ls -la conftest.py || true
+          echo "pytest collect-only (with config):"
+          pytest -q --collect-only -vv || true
+          echo "pytest collect-only (ignore config):"
+          pytest -c /dev/null --collect-only -vv || true
 
+      - name: Run tests
+        run: |
+          pytest -q || true
 
-    # show where we are and what files exist
-pwd
-ls -la
-echo "Top-level tests dir:"
-ls -la tests || true
-
-# find candidate test files
-echo "Find test files:"
-find . -maxdepth 5 -type f \( -name "test_*.py" -o -name "*_test.py" \) -print || true
-
-# show pytest config and conftest
-echo "pyproject.toml (first 200 lines):"
-sed -n '1,200p' pyproject.toml || true
-echo "conftest.py present?"
-ls -la conftest.py || true
-
-# run pytest collection diagnostics
-echo "pytest collect-only (with config):"
-pytest -q --collect-only -vv || true
-
-echo "pytest collect-only ignoring config:"
-pytest -c /dev/null --collect-only -vv || true
-
-- name: Run tests debug
-  run: |
-    pwd
-    ls -la
-    ls -la tests || true
-    find . -maxdepth 5 -type f \( -name "test_*.py" -o -name "*_test.py" \) -print || true
-    sed -n '1,200p' pyproject.toml || true
-    pytest -q --collect-only -vv || true
-    pytest -q || true
-
-
-- name: Check code style
-  run: black --check acsc/ tests/
-
-
-
+      - name: Check code style
+        run: black --check acsc/ tests/
