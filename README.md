@@ -51,7 +51,7 @@ pip install -r requirements.txt
 python scripts/acsc_validation_full_batch.py
 
 @misc{mcnamara2025acsc,
-  author = {Patrick J. McNamara},
+  author = {Patrick J. McNamara - ORCiD: 0009-0002-8978-5563},
   title = {Arithmetic--Cosmic Structure Conjecture (ACSC)},
   year = {2025},
   howpublished = {\url{https://github.com/LcosmosS/Arithmetic-Cosmic-Structure-Conjecture-ACSC}},
