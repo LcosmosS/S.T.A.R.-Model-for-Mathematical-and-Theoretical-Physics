@@ -61,7 +61,7 @@ S.T.A.R. - Empirical (Repository Link): Arithmetic Invariants and Cosmological G
 
 Repository Structure
 
-```bash
+```
 Arithmetic-Cosmic-Structure-Conjecture-ACSC/
 ├── README.md
 ├── LICENSE
@@ -96,12 +96,12 @@ Arithmetic-Cosmic-Structure-Conjecture-ACSC/
 ├── requirements.txt
 └── pyproject.toml                 # or setup.py
 
-/manuscript: Contains the full 166-page ACSC Monograph (PDF) and the original LaTeX source files for complete transparency and peer-review verification.
+/manuscript: Contains the full 166-page ACSC Monograph (PDF) source file for complete transparency and peer-review verification.
 
 /theory-verification: Includes foundational data subsets (from LMFDB and Cremona databases) and the persistent homology barcode scripts utilized to define the arithmetic point clouds.
 
 /docs: High-resolution diagrams, including the "Cosmic-Arithmetic Map," visually demonstrating the translation of rank and regulator into cosmic voids and filaments.
-
+```
 Reproducibility Statement
 Transparency and empirical reproducibility are core tenets of this research program. The theoretical projections defined in this monograph are computationally verified in the accompanying S.T.A.R. repository. The R 
 2
