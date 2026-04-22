@@ -61,6 +61,7 @@ S.T.A.R. - Empirical (Repository Link): Arithmetic Invariants and Cosmological G
 
 Repository Structure
 
+```bash
 Arithmetic-Cosmic-Structure-Conjecture-ACSC/
 ├── README.md
 ├── LICENSE
@@ -128,4 +129,3 @@ python scripts/acsc_validation_full_batch.py
   howpublished = {\url{https://github.com/LcosmosS/Arithmetic-Cosmic-Structure-Conjecture-ACSC}},
   note = {Part of the S.T.A.R. Program for Theoretical Physics}
 }
-
