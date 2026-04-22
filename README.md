@@ -12,6 +12,7 @@ Date: Beginning in March 2025 - Present
 Keywords: Number Theory, Cosmology, Persistent Homology, Elliptic Curves, Symbolic Regression, Mathematical Physics
 
 Overview
+---
 This repository serves as the foundational archive for The Arithmetic–Cosmic Structure Conjecture (ACSC). It houses the complete 166-page theoretical monograph, which proposes a profound structural symmetry: that the topological blueprint of the large-scale universe is mathematically predetermined by the arithmetic invariants of elliptic curves over the rational numbers Q.
 
 This work suggests that the universe operates as a "Symbolic Field," where physical constants and geometric realities emerge not by chance or anthropic selection, but by strict number-theoretic necessity.
@@ -49,6 +50,7 @@ cosmo
  .
 
 The ACSC Trilogy Architecture
+---
 This repository contains the Foundational Theory of a broader three-part research program. To fully contextualize this work, reviewers and researchers should reference the complete trilogy:
 
 ACSC - Theory (This Repository): The Foundational Monograph (166 pages). Establishes the core theoretical correspondence, the projection map Φ, and the category theory frameworks unifying arithmetic and cosmology.
