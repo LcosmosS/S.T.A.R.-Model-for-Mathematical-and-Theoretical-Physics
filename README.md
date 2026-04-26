@@ -18,7 +18,7 @@
 
 ## **Overview**
 
-This repository is the **primary research archive** for the **S.T.A.R. Model** — the *Symbolic–Topological–Arithmetic–Relativistic Model* — a unified theoretical physics framework that couples:
+This repository is the **primary research archive** for the **S.T.A.R. Model** — the *Symbolic–Topological–Arithmetic–Relativity Model* — a unified theoretical physics framework that couples:
 
 - **ACSC** — *Arithmetic–Cosmic Structure Conjecture*  
 - **ECC** — *Entropy Cohomology Conjecture*
