@@ -37,7 +37,8 @@ jobs:
     - name: Run dataset builder on CI subset
       run: |
         sage -python scripts/build_ec_dataset_parallel.sage \
-          --labels-file data/raw/ci_subset.csv \
+          --labels-file cremona_raw_parsed.csv \
+          --labels-file lmfdb_raw_parsed.csv \
           --output results/ci_ec_subset.csv \
           --workers 2 \
           --batch-size 10
