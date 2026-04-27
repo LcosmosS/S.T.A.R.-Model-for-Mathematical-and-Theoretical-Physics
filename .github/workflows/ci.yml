@@ -21,17 +21,6 @@ jobs:
         activate-environment: star-env
         channels: conda-forge
 
-    - name: Verify environment
-      run: |
-        which python
-        python --version
-        which pytest || echo "pytest not found"
-
-    - name: Run tests
-      shell: bash -l {0}
-      run: pytest -q
-
-
     - name: Install joblib
       run: conda install -y joblib
 
@@ -49,7 +38,13 @@ jobs:
       run: |
         export PYTHONPATH="$PYTHONPATH:$(pwd)/src"
         echo "PYTHONPATH=$PYTHONPATH"
-
+        
+    - name: Verify environment
+      run: |
+        which python
+        python --version
+        which pytest || echo "pytest not found"
+        
     - name: Run tests
       shell: bash -l {0}
       env:
