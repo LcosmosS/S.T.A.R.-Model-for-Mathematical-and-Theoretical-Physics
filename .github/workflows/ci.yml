@@ -45,7 +45,11 @@ jobs:
         pip list
 
     - name: Run tests
+      shell: bash -l {0}
+      env:
+        PYTHONPATH: "${{ github.workspace }}/src"
       run: pytest -q
+
 
     - name: Prepare small subset of labels
       run: |
