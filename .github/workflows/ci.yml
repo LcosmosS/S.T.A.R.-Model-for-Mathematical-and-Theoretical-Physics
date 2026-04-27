@@ -7,8 +7,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    # Global noninteractive mode for ALL steps, including conda/pip/Sage installs
     env:
       DEBIAN_FRONTEND: noninteractive
 
@@ -16,9 +14,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # MUST run before ANY conda/pip/Sage install
-      - name: Preseed tzdata (America/New_York)
+      - name: Install tzdata early (America/New_York)
         run: |
+          apt-get update
+          apt-get install -y tzdata
           ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
           dpkg-reconfigure --frontend noninteractive tzdata
 
