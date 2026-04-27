@@ -28,6 +28,17 @@ jobs:
           sudo apt-get install -y tzdata
           sudo dpkg-reconfigure --frontend noninteractive tzdata
 
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Fix tzdata inside container
+        run: |
+          sudo apt-get update
+          echo 'tzdata tzdata/Areas select America' | sudo debconf-set-selections
+          echo 'tzdata tzdata/Zones/America select New_York' | sudo debconf-set-selections
+          sudo ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
+          sudo dpkg-reconfigure -f noninteractive tzdata
+
       - name: Install Miniconda
         uses: conda-incubator/setup-miniconda@v3
         with:
