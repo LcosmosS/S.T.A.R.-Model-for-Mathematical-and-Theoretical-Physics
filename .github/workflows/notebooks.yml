@@ -1,4 +1,4 @@
-name: Execute Notebooks
+name: Notebook Pipeline
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  run-notebooks:
+  execute-notebooks:
     runs-on: ubuntu-latest
 
     container:
@@ -19,10 +19,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Install system tools inside container
+    - name: Install system tools
       run: |
         apt-get update
-        apt-get install -y git curl
+        apt-get install -y git curl pandoc texlive texlive-latex-extra
 
     - name: Install Python dependencies
       run: |
@@ -36,41 +36,82 @@ jobs:
         git clone https://github.com/JohnCremona/eclib.git external/eclib || true
         git clone https://github.com/LMFDB/lmfdb.git external/lmfdb || true
 
-    - name: Install eclib + LMFDB
-      run: |
-        sage -python -m pip install external/eclib || true
-        sage -python -m pip install external/lmfdb || true
-
     - name: Generate CI Cremona label subset
       run: |
         mkdir -p data/raw
         echo "label" > data/raw/ci_subset.csv
         if [ -d external/ecdata ]; then
-          find external/ecdata -type f -name "*.txt" | head -n 20 | xargs -r cat 2>/dev/null \
+          find external/ecdata -type f -name "*.txt" | head -n 20 | xargs -r cat 2>/dev/null | \
             grep -v "^#" | awk '{print $1}' | head -n 1000 >> data/raw/ci_subset.csv
         fi
 
     - name: Execute notebooks
       run: |
-        mkdir -p results
-        if ls examples/*.ipynb 1> /dev/null 2>&1; then
-          for nb in examples/*.ipynb; do
-            echo "Running $nb"
-            sage -python -m jupyter nbconvert \
-              --to notebook \
-              --execute "$nb" \
-              --output "$(basename $nb .ipynb)-executed.ipynb" \
-              --ExecutePreprocessor.timeout=1800
-          done
-        else
-          echo "No notebooks found in examples/. Skipping execution."
-        fi
+        mkdir -p results exports
+        for nb in examples/*.ipynb; do
+          echo "Running $nb"
+          sage -python -m jupyter nbconvert \
+            --to notebook \
+            --execute "$nb" \
+            --output "$(basename $nb .ipynb)-executed.ipynb" \
+            --ExecutePreprocessor.timeout=1800
+        done
 
-    - name: Upload notebook results
+    - name: Export HTML and PDF
+      run: |
+        mkdir -p exports
+        for nb in examples/*-executed.ipynb; do
+          base=$(basename $nb .ipynb)
+          sage -python -m jupyter nbconvert --to html "$nb" --output "exports/${base}.html"
+          sage -python -m jupyter nbconvert --to pdf "$nb" --output "exports/${base}.pdf"
+        done
+
+    - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: notebook-results
+        name: notebook-outputs
         path: |
           results/
           examples/*-executed.ipynb
-        if-no-files-found: warn
+          exports/
+
+  regression-check:
+    runs-on: ubuntu-latest
+    needs: execute-notebooks
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Download current artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: notebook-outputs
+        path: current/
+
+    - name: Download previous artifacts
+      uses: dawidd6/action-download-artifact@v3
+      with:
+        workflow: notebooks.yml
+        branch: main
+        run_number: ${{ github.run_number - 1 }}
+        name: notebook-outputs
+        path: previous/
+      continue-on-error: true
+
+    - name: Install Python
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3 python3-pip
+        pip3 install numpy pandas
+
+    - name: Run regression diffs
+      run: |
+        mkdir -p diff_report
+        python3 scripts/diff_outputs.py current/ previous/ diff_report/
+
+    - name: Upload diff report
+      uses: actions/upload-artifact@v4
+      with:
+        name: regression-diff
+        path: diff_report/
