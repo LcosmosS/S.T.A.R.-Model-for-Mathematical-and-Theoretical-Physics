@@ -10,7 +10,8 @@ on:
 jobs:
   execute-notebooks:
     runs-on: ubuntu-latest
-
+    env:
+      DEBIAN_FRONTEND: noninteractive
     container:
       image: sagemath/sagemath:latest
       options: --user root
