@@ -11,6 +11,14 @@ jobs:
       DEBIAN_FRONTEND: noninteractive
 
     steps:
+      - name: Force-disable tzdata prompts system-wide
+        run: |
+          echo 'tzdata tzdata/Areas select America' | sudo debconf-set-selections
+          echo 'tzdata tzdata/Zones/America select New_York' | sudo debconf-set-selections
+          sudo rm -f /etc/localtime
+          sudo ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
+          sudo dpkg-reconfigure -f noninteractive tzdata
+
       - name: Preseed tzdata BEFORE ANYTHING ELSE
         run: |
           sudo rm -f /etc/localtime
@@ -19,7 +27,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y tzdata
           sudo dpkg-reconfigure --frontend noninteractive tzdata
-
 
       - name: Install Miniconda
         uses: conda-incubator/setup-miniconda@v3
