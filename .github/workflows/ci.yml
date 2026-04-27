@@ -24,7 +24,7 @@ jobs:
     - name: Install joblib
       shell: bash -l {0}
       run: conda install -y joblib
-    
+
     - name: Clone Cremona and LMFDB archives
       shell: bash -l {0}
       run: |
@@ -65,19 +65,19 @@ jobs:
       run: |
         mkdir -p data/raw
         echo "label" > data/raw/ci_subset.csv
-        sage -python - << 'EOF' >> data/raw/ci_subset.csv
+        sage -python - <<EOF >> data/raw/ci_subset.csv
 from sageall import CremonaDatabase
-db = CremonaDatabase()
 
+db = CremonaDatabase()
 labels = []
+
 for N in range(1, 5000):
-    try:
-        curves = db.curves(N)
-        for L in curves:
-            labels.append(L)
-            if len(labels) >= 1000:
-                raise StopIteration
-    except StopIteration:
+    curves = db.curves(N)
+    for L in curves:
+        labels.append(L)
+        if len(labels) >= 1000:
+            break
+    if len(labels) >= 1000:
         break
 
 for L in labels[:1000]:
