@@ -7,17 +7,20 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    # Global noninteractive mode for ALL steps, including conda/pip/Sage installs
     env:
       DEBIAN_FRONTEND: noninteractive
 
     steps:
-      - name: Preseed tzdata (prevent interactive prompt)
-        run: |
-          ln -fs /usr/share/zoneinfo/UTC /etc/localtime
-          dpkg-reconfigure --frontend noninteractive tzdata
-
       - name: Checkout repo
         uses: actions/checkout@v4
+
+      # MUST run before ANY conda/pip/Sage install
+      - name: Preseed tzdata (America/New_York)
+        run: |
+          ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
+          dpkg-reconfigure --frontend noninteractive tzdata
 
       - name: Install Miniconda
         uses: conda-incubator/setup-miniconda@v3
