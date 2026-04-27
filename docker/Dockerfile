@@ -11,5 +11,7 @@ RUN apt-get update && \
 COPY requirements.txt /tmp/requirements.txt
 RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 
+RUN pip3 install pytest
+
 WORKDIR /workspace
 COPY . /workspace
