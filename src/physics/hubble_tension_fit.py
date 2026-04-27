@@ -17,7 +17,7 @@ This module provides:
 """
 
 import numpy as np
-from .hubble_effective import HubbleEffective
+from .hubble_effective.py import HubbleEffective
 
 
 class HubbleTensionFit:
