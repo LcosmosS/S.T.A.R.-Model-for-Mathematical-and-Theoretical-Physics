@@ -7,18 +7,12 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    env:
-      DEBIAN_FRONTEND: noninteractive
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Install package
-        run: pip install -e ".[dev]" 
-
-      - name: Verify environment
-        run: |
-          python3 --version
+        run: pip install -e ".[dev]"
 
       - name: Run tests
         run: pytest -q
