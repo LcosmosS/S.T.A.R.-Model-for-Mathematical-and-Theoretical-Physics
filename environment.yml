@@ -10,8 +10,8 @@ dependencies:
   - joblib
   - pip
   - pip:
+      - pytest
       - jupyter
       - notebook
       - nbconvert
       - nbformat
-      - pytest
