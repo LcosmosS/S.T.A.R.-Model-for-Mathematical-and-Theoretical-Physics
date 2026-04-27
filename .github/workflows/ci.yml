@@ -72,7 +72,7 @@ jobs:
         mkdir -p data/raw
         echo "label" > data/raw/ci_subset.csv
 
-        python_code="
+        cat > python_script.py << 'EOF'
 from sageall import CremonaDatabase
 
 db = CremonaDatabase()
@@ -89,9 +89,9 @@ for N in range(1, 5000):
 
 for L in labels[:1000]:
     print(L)
-"
+EOF
 
-        echo \"$python_code\" | sage -python >> data/raw/ci_subset.csv
+        sage -python python_script.py >> data/raw/ci_subset.csv
 
     - name: Run dataset builder on CI subset
       shell: bash -l {0}
