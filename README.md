@@ -3,22 +3,21 @@
 
 # **S.T.A.R. Model**  
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/LcosmosS/S.T.A.R.-Model-for-Mathematical-and-Theoretical-Physics/HEAD?urlpath=%2Fdoc%2Ftree%2F01_preprocessing.ipynb)
-### **Symbolic–Topological–Arithmetic–Relativity Model**
-### **A Unified Framework for Mathematical & Theoretical Physics**  
-### **Integrating ACSC + ECC to Address the Hubble–Planck Tension**
+## **Symbolic–Topological–Arithmetic–Relativity Model**
+### **A Proposed Framework for Mathematical & Theoretical Physics– Integrating ACSC + ECC to Address the Hubble–Planck Tension**
 
 ---
 
 **Author:** Patrick J. McNamara  
 **ORCiD:** 0009‑0002‑8978‑5563  
 **Project Start:** March 2025 — Active  
-**Keywords:** Number Theory, Cosmology, Entropy Cohomology, Persistent Homology, Elliptic Curves, Symbolic Regression, Mathematical Physics
+**Keywords:** Number Theory, Cosmology, Entropy Cohomology, Persistent Homology, Elliptic Curves, Symbolic Regression, Mathematical Physics, Theoretical Physics 
 
 ---
 
 ## **Overview**
 
-This repository is the **primary research archive** for the **S.T.A.R. Model** — the *Symbolic–Topological–Arithmetic–Relativity Model* — a unified theoretical physics framework that couples:
+This repository is the **primary research archive** for the **S.T.A.R. Model** — the *Symbolic–Topological–Arithmetic–Relativity Model* — a proposed theoretical physics framework that couples:
 
 - **ACSC** — *Arithmetic–Cosmic Structure Conjecture*  
 - **ECC** — *Entropy Cohomology Conjecture*
@@ -36,7 +35,7 @@ The S.T.A.R. Model proposes that the **large‑scale structure of the universe**
 - symbolic geodesics  
 - scalar‑field coupling  
 
-This repository contains the **full theoretical monograph**, **computational toolkit**, **TDA stability pipeline**, and **symbolic regression engine** that define the S.T.A.R. Model.
+This repository contains the **full theoretical monographs**, **computational toolkit**, **TDA stability pipeline**, and **symbolic regression engine** that define the S.T.A.R. Model.
 
 ---
 
@@ -83,7 +82,7 @@ Defines the projection map $\( \Phi(E) \)$, the k‑factor scaling, density‑eq
 Defines the entropy field $\( \mathcal{M}(x) \)$, the differential forms $\( \theta = d\mathcal{M} \)$, $\( \omega = d\theta \)$, and the cohomology class $\([\omega]\)$ governing symbolic conservation.
 
 ### **3. S.T.A.R. — Unified Physics**  
-*Symbolic–Topological–Arithmetic–Relativistic Model*  
+*Symbolic–Topological–Arithmetic–Relativity Model*  
 Combines ACSC + ECC into a full cosmological model with:
 
 - metric perturbations  
@@ -92,7 +91,7 @@ Combines ACSC + ECC into a full cosmological model with:
 - cosmic‑web alignment  
 - symbolic regression law discovery  
 
-This repository is the **central hub** of the S.T.A.R. program.
+This repository is the **central hub** of the S.T.A.R. program, and ultimately proposes the introduction of a **Symbolic Field-Theory.**
 
 ---
 
