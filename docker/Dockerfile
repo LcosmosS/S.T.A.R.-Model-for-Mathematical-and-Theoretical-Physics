@@ -1,72 +1,63 @@
-# Dockerfile — sagemath base, clone ecdata/eclib/lmfdb, copy cremona DB if present
-FROM sagemath/sagemath:latest
+# Use a small base image
+FROM ubuntu:22.04
 
-USER root
+ARG DEBIAN_FRONTEND=noninteractive
+ENV PATH=/opt/conda/bin:$PATH
+ENV CONDA_AUTO_UPDATE_CONDA=false
 
-# Install tools needed for cloning, extracting, and building small Python pieces
+# Install system deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git wget ca-certificates tar build-essential pkg-config python3-venv \
+    ca-certificates \
+    wget \
+    curl \
+    git \
+    build-essential \
+    cmake \
+    pkg-config \
+    libblas-dev \
+    liblapack-dev \
+    libatlas-base-dev \
+    libffi-dev \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /opt
+# Install Miniconda
+ENV MINICONDA_VERSION=py310_23.9.0-1
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh -O /tmp/miniconda.sh \
+    && bash /tmp/miniconda.sh -b -p /opt/conda \
+    && rm /tmp/miniconda.sh \
+    && /opt/conda/bin/conda clean -afy
 
-# Clone John Cremona repos and LMFDB
-RUN git clone https://github.com/JohnCremona/ecdata.git /opt/ecdata || true
-RUN git clone https://github.com/JohnCremona/eclib.git /opt/eclib || true
-RUN git clone https://github.com/LMFDB/lmfdb.git /opt/lmfdb || true
+# Create conda env with Python 3.10 and install TDA libs from conda-forge
+# Use explicit Python 3.10 to match gudhi 3.5.1 compatibility
+RUN conda config --set channel_priority strict \
+    && conda config --add channels conda-forge \
+    && conda create -n star-env python=3.10 -y \
+    && /opt/conda/bin/conda run -n star-env python -m pip install --upgrade pip setuptools wheel \
+    && /opt/conda/bin/conda run -n star-env conda install -y -c conda-forge \
+       gudhi=3.5.1 ripser=0.6.2 persim=0.6.0 numpy scipy pandas \
+    && /opt/conda/bin/conda clean -afy
 
-# If ecdata contains a cremona DB directory or tarball, copy/extract it into Sage DB dir
-RUN mkdir -p /usr/local/share/sage/databases && \
-    if [ -d /opt/ecdata/cremona ]; then \
-        cp -a /opt/ecdata/cremona /usr/local/share/sage/databases/cremona; \
-    elif [ -f /opt/ecdata/cremona.tar.gz ]; then \
-        tar -xzf /opt/ecdata/cremona.tar.gz -C /usr/local/share/sage/databases; \
-    else \
-        echo "No cremona dir/tarball in ecdata; full DB may require sage -i or external tarball"; \
-    fi && \
-    chmod -R a+rX /usr/local/share/sage/databases/cremona || true
+# Make the conda env the default for subsequent RUN steps
+SHELL ["conda", "run", "-n", "star-env", "/bin/bash", "-lc"]
 
-# Install eclib if it exposes a Python package (best-effort)
-RUN sage -python -m pip install --no-cache-dir /opt/eclib || true
+# Create a non-root user
+ARG USER=star
+ARG UID=1000
+RUN useradd -m -u ${UID} ${USER}
 
-# Install LMFDB Python requirements (best-effort). LMFDB has many optional deps;
-# we install core packages commonly needed for local development.
-RUN sage -python -m pip install --no-cache-dir \
-    numpy pandas tqdm scikit-learn flask pymongo gunicorn \
-    || true
+WORKDIR /home/${USER}/app
+COPY . /home/${USER}/app
+RUN chown -R ${USER}:${USER} /home/${USER}/app
 
-# Optional: install lmfdb as a local package for development (editable)
-# This will not run if lmfdb has no setup.py/pyproject; it's best-effort.
-RUN if [ -f /opt/lmfdb/setup.py ] || [ -f /opt/lmfdb/pyproject.toml ]; then \
-      sage -python -m pip install --no-cache-dir -e /opt/lmfdb || true; \
-    else \
-      echo "LMFDB repo has no installable package metadata; use it as source in /opt/lmfdb"; \
-    fi
+USER ${USER}
 
-# copy and extract prebuilt cremona DB into Sage DB dir
-# commented out for Binder Launch. Extraction to sagemath is unnecessary.
-# Database used for csv creation.
-# (uncomment for local installation) 
-# COPY cremona_db.tar.gz /tmp/cremona_db.tar.gz
+# Install package in editable mode with dev extras (inside the conda env)
+RUN python -m pip install --no-cache-dir -e ".[dev,tda]"
 
-# Extract it into Sage’s database directory
-# commented out for Binder Launch. Extraction to sagemath is unnecessary.
-# Database used for csv creation.
-# uncomment for local installation
-# RUN mkdir -p /usr/local/share/sage/databases && \
-#    tar -xzf /tmp/cremona_db.tar.gz -C /usr/local/share/sage/databases && \
-#    rm /tmp/cremona_db.tar.gz && \
-#    chmod -R a+rX /usr/local/share/sage/databases/cremona
+# Expose a default working directory and entrypoint
+ENV PYTHONPATH=/home/${USER}/app:$PYTHONPATH
+WORKDIR /home/${USER}/app
 
-ENV SAGE_DATABASES=/usr/local/share/sage/databases
-ENV PYTHONNOUSERSITE=1
-
-# Project workspace
-WORKDIR /workspace
-RUN mkdir -p /workspace && chmod -R a+rX /workspace
-
-VOLUME ["/workspace"]
-EXPOSE 8888
-
-# Start JupyterLab via Sage's Python
-CMD ["bash", "-lc", "sage -python -m jupyterlab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='acsc2026'"]
+# Default command: show python version and installed packages (override in CI)
+CMD ["bash", "-lc", "python -V && python -c 'import gudhi, ripser; print(\"gudhi\", gudhi.__version__, \"ripser\", ripser.__version__)'"]
