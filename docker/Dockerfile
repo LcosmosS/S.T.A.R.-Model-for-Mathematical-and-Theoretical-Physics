@@ -24,7 +24,7 @@ RUN mkdir -p /var/lib/apt/lists/partial \
 RUN micromamba create -y -n ${CONDA_ENV} python=${PYTHON_VERSION} -c conda-forge \
     numpy scipy pandas plotly scikit-learn\
     gudhi=3.12.0 ripser=0.6.14 persim=0.3.8 \
-    plotly=5.18.0 nbconvert nbclient jupyter-core ipykernel \
+    plotly=5.18.0 nbconvert nbclient jupyter_core ipykernel \
  && micromamba clean --all --yes
 
 # Make the conda env the default for subsequent RUN steps
