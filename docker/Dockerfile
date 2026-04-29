@@ -24,18 +24,13 @@ RUN mkdir -p /var/lib/apt/lists/partial \
 RUN micromamba create -y -n ${CONDA_ENV} python=${PYTHON_VERSION} -c conda-forge \
     numpy scipy pandas plotly scikit-learn\
     gudhi=3.12.0 ripser=0.6.14 persim=0.3.8 \
+    plotly=5.18.0 nbconvert nbclient jupyter-core ipykernel \
  && micromamba clean --all --yes
 
 # Make the conda env the default for subsequent RUN steps
 ENV CONDA_DEFAULT_ENV=${CONDA_ENV}
 ENV CONDA_PREFIX=/opt/conda/envs/${CONDA_ENV}
 ENV PATH=${CONDA_PREFIX}/bin:${PATH}
-
-RUN micromamba create -y -n ${CONDA_ENV} python=${PYTHON_VERSION} -c conda-forge \
-    numpy scipy pandas \
-    gudhi=3.5.1 ripser=0.6.2 persim=0.6.0 \
-    plotly=5.18.0 nbconvert nbclient jupyter-core ipykernel \
- && micromamba clean --all --yes
 
 # Create non-root user only if missing (robust)
 RUN if id -u ${USER} >/dev/null 2>&1; then \
