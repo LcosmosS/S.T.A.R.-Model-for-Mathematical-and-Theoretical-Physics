@@ -13,7 +13,6 @@ SHELL ["/bin/bash", "-lc"]
 USER root
 
 # Minimal system deps needed for conda packages and pip wheels
-# Create apt lists partial dir if missing to avoid permission errors in some base images
 RUN mkdir -p /var/lib/apt/lists/partial \
  && apt-get update \
  && apt-get install -y --no-install-recommends \
@@ -39,11 +38,22 @@ ENV CONDA_DEFAULT_ENV=${CONDA_ENV}
 ENV CONDA_PREFIX=/opt/conda/envs/${CONDA_ENV}
 ENV PATH=${CONDA_PREFIX}/bin:${PATH}
 
-# Create a non-root user and set ownership of app directory
-RUN useradd -m -u ${UID} ${USER}
+# Create non-root user only if it doesn't already exist
+# If UID 1000 is already taken, create the user without specifying UID
+RUN if id -u ${USER} >/dev/null 2>&1; then \
+      echo "user ${USER} already exists"; \
+    else \
+      if id -u ${UID} >/dev/null 2>&1; then \
+        echo "UID ${UID} already taken, creating ${USER} without explicit UID"; \
+        useradd -m ${USER}; \
+      else \
+        useradd -m -u ${UID} ${USER}; \
+      fi; \
+    fi
 
 WORKDIR /home/${USER}/app
 COPY . /home/${USER}/app
+# chown will succeed whether the user existed or was just created
 RUN chown -R ${USER}:${USER} /home/${USER}/app
 
 # Switch to non-root user for installing Python package and runtime
