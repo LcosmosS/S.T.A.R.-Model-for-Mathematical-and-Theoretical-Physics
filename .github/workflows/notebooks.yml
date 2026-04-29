@@ -23,7 +23,8 @@ jobs:
     - name: Install system tools
       run: |
         apt-get update
-        apt-get install -y git curl pandoc texlive texlive-latex-extra
+        apt-get install -y git curl pandoc \
+          texlive texlive-latex-extra texlive-xetex
 
     - name: Install Python dependencies
       run: |
