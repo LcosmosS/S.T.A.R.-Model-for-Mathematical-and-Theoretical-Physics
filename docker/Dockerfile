@@ -31,6 +31,12 @@ ENV CONDA_DEFAULT_ENV=${CONDA_ENV}
 ENV CONDA_PREFIX=/opt/conda/envs/${CONDA_ENV}
 ENV PATH=${CONDA_PREFIX}/bin:${PATH}
 
+RUN micromamba create -y -n ${CONDA_ENV} python=${PYTHON_VERSION} -c conda-forge \
+    numpy scipy pandas \
+    gudhi=3.5.1 ripser=0.6.2 persim=0.6.0 \
+    plotly=5.18.0 nbconvert nbclient jupyter-core ipykernel \
+ && micromamba clean --all --yes
+
 # Create non-root user only if missing (robust)
 RUN if id -u ${USER} >/dev/null 2>&1; then \
       echo "user ${USER} already exists"; \
