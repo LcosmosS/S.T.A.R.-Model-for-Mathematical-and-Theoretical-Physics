@@ -1,1 +1,6 @@
 data/raw/*.csv filter=lfs diff=lfs merge=lfs -text
+data/raw/*2MASS*.csv filter=lfs diff=lfs merge=lfs -text
+data/raw/*GAIADR3*.csv filter=lfs diff=lfs merge=lfs -text
+data/raw/*SDSS*.csv filter=lfs diff=lfs merge=lfs -text
+data/raw/*DESI*.csv filter=lfs diff=lfs merge=lfs -text
+data/raw/*SIMBAD*.csv filter=lfs diff=lfs merge=lfs -text
