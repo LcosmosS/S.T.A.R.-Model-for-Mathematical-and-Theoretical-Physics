@@ -3,6 +3,12 @@ import os, sys, json, time, pickle, subprocess
 from pathlib import Path
 import numpy as np
 import pandas as pd
+from src.data.load_sky_surveys import load_sky_surveys
+
+def test_sky_surveys_load():
+    df1, df2 = load_sky_surveys(downsample=100, validate_schema=True)
+    assert len(df1) > 0
+    assert len(df2) > 0
 
 # ---------- User-editable parameters ----------
 aligned_csv = "derived/acsc_projected_cremona_ptd_aligned.csv"   # input aligned coords
