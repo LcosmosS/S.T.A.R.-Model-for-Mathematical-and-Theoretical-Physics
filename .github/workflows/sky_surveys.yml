@@ -1,0 +1,26 @@
+name: Sky Survey Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  sky-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Validate sky survey loader
+      run: pytest -q src/tests/test_load_sky_surveys.py
+
+    - name: Run dataset builder (downsampled)
+      run: python - << 'EOF'
+from src.data.sky_survey_dataset_builder import SkySurveyDatasetBuilder
+builder = SkySurveyDatasetBuilder(downsample=200)
+builder.save("sky_surveys_ci.parquet")
+EOF
