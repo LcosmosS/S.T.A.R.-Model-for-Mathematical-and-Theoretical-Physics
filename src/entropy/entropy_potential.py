@@ -14,7 +14,12 @@ This module:
 
 import numpy as np
 from .entropy_field import EntropyField
+from src.data.load_sky_surveys import load_sky_surveys
 
+def test_sky_surveys_load():
+    df1, df2 = load_sky_surveys(downsample=100, validate_schema=True)
+    assert len(df1) > 0
+    assert len(df2) > 0
 
 class EntropyPotential:
     """
