@@ -27,7 +27,7 @@ def write_module(name, obj):
 with zipfile.ZipFile(BAO_ZIP, "r") as z:
     z.extractall(DATA_DIR / "bao_data-master")
 
-cc_path = DATA_DIR / "bao_data-master" / "cc" / "Hz_Moresco2022.dat"
+cc_path = DATA_DIR  / "cc" / "Hz_Moresco2022.dat"
 bao_dir = DATA_DIR / "bao_data-master" / "BAO"
 
 # Cosmic Chronometers
