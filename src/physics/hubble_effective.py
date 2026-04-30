@@ -9,7 +9,12 @@ H_eff(z) = H0 * <Ω_E * r>_z * (1 + α * C_entropy(z))
 """
 
 import numpy as np
+from src.data.load_sky_surveys import load_sky_surveys
 
+def test_sky_surveys_load():
+    df1, df2 = load_sky_surveys(downsample=100, validate_schema=True)
+    assert len(df1) > 0
+    assert len(df2) > 0
 
 class HubbleEffective:
     """
