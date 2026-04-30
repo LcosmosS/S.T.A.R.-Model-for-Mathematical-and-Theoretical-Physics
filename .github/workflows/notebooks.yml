@@ -34,6 +34,7 @@ jobs:
           numpy pandas tqdm scikit-learn flask pymongo gunicorn \
           ripser persim \
           plotly==5.18.0 \
+          corner>=2.2.1 \
           nbconvert nbclient ipykernel jupyter-core nest_asyncio
 
     - name: Prepare IPython runtime dir
