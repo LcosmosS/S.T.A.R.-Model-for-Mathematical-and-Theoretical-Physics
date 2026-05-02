@@ -24,6 +24,28 @@ class CosmicChronometers:
     - numerical stability checks
     - API compatibility with DESIBAO and PlanckSH0ESJointLikelihood
     """
+"""
+Embedded Cosmic Chronometer H(z) dataset (Moresco et al. 2022)
+CI‑safe, file‑free, used by CosmicChronometers likelihood.
+"""
+
+COSMIC_CHRONOMETERS = {
+    "z": [
+        0.07, 0.09, 0.12, 0.17, 0.179, 0.199, 0.2, 0.27, 0.28, 0.352,
+        0.38, 0.4, 0.48, 0.593, 0.68, 0.781, 0.875, 0.88, 0.9, 1.037,
+        1.3, 1.363, 1.43, 1.53, 1.75, 1.965
+    ],
+    "H": [
+        69.0, 69.0, 68.6, 83.0, 75.0, 75.0, 72.9, 77.0, 88.8, 83.0,
+        81.5, 82.8, 97.0, 104.0, 92.0, 105.0, 125.0, 90.0, 117.0, 154.0,
+        168.0, 160.0, 177.0, 140.0, 202.0, 186.5
+    ],
+    "sigma": [
+        19.6, 12.0, 26.2, 8.0, 4.0, 5.0, 29.6, 14.0, 36.6, 14.0,
+        1.9, 10.0, 62.0, 13.0, 8.0, 12.0, 17.0, 40.0, 23.0, 20.0,
+        17.0, 33.0, 18.0, 14.0, 40.0, 50.4
+    ],
+}
 
     def __init__(self, data):
         """
