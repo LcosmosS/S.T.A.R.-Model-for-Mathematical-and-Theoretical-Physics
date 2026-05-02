@@ -52,7 +52,11 @@ class PaperFiguresPipeline:
         os.makedirs(output_dir, exist_ok=True)
 
         # Load Planck data
-        df_planck = pd.read_csv(self.data_paths["planck"])
+        planck_data = self.data_paths["planck"]
+        if isinstance(planck_data, str):
+            df_planck = pd.read_csv(planck_data)
+        else:
+            df_planck = pd.DataFrame(planck_data))
 
         # Build models
         star = self.best_fit_model()
