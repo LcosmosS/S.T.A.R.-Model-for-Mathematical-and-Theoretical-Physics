@@ -56,7 +56,7 @@ class PaperFiguresPipeline:
         if isinstance(planck_data, str):
             df_planck = pd.read_csv(planck_data)
         else:
-            df_planck = pd.DataFrame(planck_data))
+            df_planck = pd.DataFrame(planck_data)
 
         # Build models
         star = self.best_fit_model()
