@@ -10,8 +10,6 @@ on:
 jobs:
   execute-notebooks:
     runs-on: ubuntu-latest
-    env:
-      DEBIAN_FRONTEND: noninteractive
     container:
       image: sagemath/sagemath:latest
       options: --user root
@@ -20,39 +18,38 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Detect project root
-      id: findroot
+    - name: Set project root
+      id: root
       run: |
-        echo "Searching for project root..."
-        ROOT=$(find "$GITHUB_WORKSPACE" -maxdepth 3 -type d -name src -printf '%h\n' | head -n 1)
+        ROOT=$(find /__w -maxdepth 4 -type d -name src -printf '%h\n' | head -n 1)
         echo "ROOT=$ROOT" >> $GITHUB_OUTPUT
         echo "Detected project root: $ROOT"
 
     - name: Install dependencies
       run: |
-        cd "${{ steps.findroot.outputs.ROOT }}"
-        pip install -r requirements.txt
+        cd "${{ steps.root.outputs.ROOT }}"
+        sage -python -m pip install -r requirements.txt
 
     - name: Install package
       run: |
-        cd "${{ steps.findroot.outputs.ROOT }}"
-        pip install -e .
+        cd "${{ steps.root.outputs.ROOT }}"
+        sage -python -m pip install -e .
 
     - name: Verify working directory
       run: |
-        cd "${{ steps.findroot.outputs.ROOT }}"
+        cd "${{ steps.root.outputs.ROOT }}"
         pwd
         ls -al
 
     - name: Validate sky survey loader
       run: |
-        cd "${{ steps.findroot.outputs.ROOT }}"
-        pytest -q src/tests/test_load_sky_surveys.py
+        cd "${{ steps.root.outputs.ROOT }}"
+        sage -python -m pytest -q src/tests/test_load_sky_surveys.py
 
     - name: Run dataset builder (downsampled)
       run: |
-        cd "${{ steps.findroot.outputs.ROOT }}"
-        python - << 'EOF'
+        cd "${{ steps.root.outputs.ROOT }}"
+        sage -python - << 'EOF'
         from src.data.sky_survey_dataset_builder import SkySurveyDatasetBuilder
         builder = SkySurveyDatasetBuilder(downsample=200)
         builder.save("sky_surveys_ci.parquet")
