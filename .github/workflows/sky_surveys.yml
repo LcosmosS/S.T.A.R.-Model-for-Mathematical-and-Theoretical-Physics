@@ -18,12 +18,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Dynamically detect the project root (the folder containing src/)
     - name: Detect project root
       id: root
       run: |
-        echo "Searching for project root..."
-        ROOT=$(find /__w -maxdepth 5 -type d -name src -printf '%h\n' | head -n 1)
+        echo "Searching for project root inside $GITHUB_WORKSPACE..."
+        ROOT=$(find "$GITHUB_WORKSPACE" -maxdepth 3 -type d -name src -printf '%h\n' | head -n 1)
         echo "ROOT=$ROOT" >> $GITHUB_OUTPUT
         echo "Detected project root: $ROOT"
 
