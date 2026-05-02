@@ -36,7 +36,16 @@ class SymbolicCosmology:
         self.cosmo = Cosmology(H_expr, params)
 
     def H(self, z):
-        return self.cosmo.H_of_z(z)
+    Hz = self._H_func(z)
+
+    # Clamp negative sqrt arguments
+    Hz = np.where(np.isfinite(Hz), Hz, np.nan)
+    Hz = np.where(Hz < 0, np.nan, Hz)
+
+    # Replace NaNs with a large penalty value
+    Hz = np.where(np.isnan(Hz), 1e12, Hz)
+
+    return Hz
 
     def distance_modulus(self, z):
         return self.cosmo.distance_modulus(z)
