@@ -37,7 +37,14 @@ def load_pantheon_plus():
                                   df.get('MU_SH0ES_ERR_DIAG', 0.15))
         
         print(f"Loaded {len(df)} SNe Ia. Final columns: {df.columns.tolist()}")
-        return df.to_dict('index')
+        # after cleaning df and ensuring columns exist
+        df = df[["z", "mu", "sigma_mu"]].dropna()
+        PANTHEON_PLUS_FULL = {
+            "z": df["z"].tolist(),
+            "mu": df["mu"].tolist(),
+            "sigma_mu": df["sigma_mu"].tolist()
+        }
+
     
     print("Using placeholder")
     return {
