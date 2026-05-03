@@ -1,12 +1,50 @@
+import yaml
+
+from src.likelihoods.data.planck_2015 import PLANCK_2015
+from src.likelihoods.data.planck_2018_recon import PLANCK_2018_RECON
+from src.likelihoods.data.desi_bao_dr1 import DESI_BAO_DR1
+from src.likelihoods.data.cosmic_chronometers import COSMIC_CHRONOMETERS
+
+from src.likelihoods.planck_shoes_joint import PlanckSH0ESJointLikelihood
+from src.likelihoods.desi_bao import DESIBAO
+from src.likelihoods.cosmic_chronometers import CosmicChronometers
+from src.likelihoods.joint_likelihood import JointLikelihood
+
 from src.physics.mcmc_joint_pipeline import JointMCMCPipeline
 from src.pipeline.paper_figures_pipeline import PaperFiguresPipeline
 
-def run_full_inference(config):
-    # Build likelihood
-    planck = eval(config["datasets"]["planck"])
-    bao = eval(config["datasets"]["bao"])
-    cc = eval(config["datasets"]["cc"])
 
+DATASET_REGISTRY = {
+    "PLANCK_2015": PLANCK_2015,
+    "PLANCK_2018_RECON": PLANCK_2018_RECON,
+    "DESI_BAO_DR1": DESI_BAO_DR1,
+    "COSMIC_CHRONOMETERS": COSMIC_CHRONOMETERS,
+}
+
+
+def load_dataset(name):
+    if name not in DATASET_REGISTRY:
+        raise KeyError(f"Unknown dataset '{name}'. Available: {list(DATASET_REGISTRY.keys())}")
+    return DATASET_REGISTRY[name]
+
+
+def build_joint_likelihood(planck_dict):
+    planck_like = PlanckSH0ESJointLikelihood(planck_dict)
+    bao_like = DESIBAO(DESI_BAO_DR1)
+    cc_like = CosmicChronometers(COSMIC_CHRONOMETERS)
+    return JointLikelihood(planck_like, bao_like, cc_like)
+
+
+def run_full_inference(config_path):
+    with open(config_path, "r") as f:
+        config = yaml.safe_load(f)
+
+    # Load datasets
+    planck = load_dataset(config["datasets"]["planck"])
+    bao = load_dataset(config["datasets"]["bao"])
+    cc = load_dataset(config["datasets"]["cc"])
+
+    # Build likelihood
     joint = build_joint_likelihood(planck)
 
     # Run MCMC
@@ -23,16 +61,12 @@ def run_full_inference(config):
         nsteps=config["mcmc"]["nsteps"]
     )
 
-    # Figures
+    # Generate figures
     fig = PaperFiguresPipeline(
         chain,
         config["model"]["param_names"],
         config["model"]["H_expr"],
-        data_paths={
-            "planck": planck,
-            "bao": bao,
-            "cc": cc
-        }
+        data_paths={"planck": planck, "bao": bao, "cc": cc}
     )
 
     constraints = fig.run(config["output_dir"])
