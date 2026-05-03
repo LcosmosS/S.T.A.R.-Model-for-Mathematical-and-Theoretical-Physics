@@ -95,7 +95,7 @@ This repository is the **central hub** of the S.T.A.R. Program, and ultimately p
 ## **Repository Structure**
 
 ```
-S.T.A.R.-Model/
+S.T.A.R.-Program/
 ├── README.md
 ├── LICENSE
 ├── CITATION.cff
