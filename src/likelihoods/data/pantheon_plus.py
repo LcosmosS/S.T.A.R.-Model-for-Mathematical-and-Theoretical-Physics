@@ -12,15 +12,15 @@ from pathlib import Path
 import pandas as pd
 
 def load_pantheon_plus():
-    raw_dir = Path(__file__).resolve().parent.parent.parent / "data" / "raw"
-    dat_file = raw_dir / "pantheon_plus.dat"
+    raw_dir = Path(__file__).resolve().parent.parent.parent / "data" / "processed"
+    dat_file = raw_dir / "pantheon_plus.csv"
 
     if not dat_file.exists():
         # Safe placeholder (dict of lists) so imports never fail
         return {
-            "z": [0.01],
-            "mu": [32.5],
-            "sigma_mu": [0.08]
+            "z": [],
+            "mu": [],
+            "sigma_mu": []
         }
 
     # Read with first line as header
