@@ -3,7 +3,7 @@
 
 # **The S.T.A.R. Program**  
 ## **Symbolic–Topological–Arithmetic–Relativity Model for Cosmology**
-### **A Proposed Model for Mathematical & Theoretical Physics– Integrating ACSC + ECC to Address the Hubble–Planck Tension**
+### **A Proposed Model for Mathematical & Theoretical Physics to Address the Hubble–Planck Tension**
 
 ---
 
