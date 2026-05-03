@@ -10,66 +10,96 @@ Generates:
 - Posterior corner plots
 """
 
-from __future__ import annotations
+import os
 import numpy as np
 import matplotlib.pyplot as plt
-import corner
+
+def _ensure_outdir(output_dir):
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+
+def plot_hubble_diagram(df, lcdm, star, output_dir=None):
+    """
+    Plot distance modulus vs redshift and save to output_dir if provided.
+    Signature: plot_hubble_diagram(df, lcdm, star, output_dir=None)
+    """
+    _ensure_outdir(output_dir)
+
+    z = np.array(df["z"])
+    mu_obs = np.array(df["mu"])
+    sigma = np.array(df["sigma_mu"])
+
+    # Compute model distance moduli
+    mu_lcdm = np.array([lcdm.distance_modulus(zi) for zi in z])
+    mu_star = np.array([star.distance_modulus(zi) for zi in z])
+
+    plt.figure(figsize=(10, 6))
+    plt.errorbar(z, mu_obs, yerr=sigma, fmt=".", label="Pantheon+", alpha=0.6)
+    plt.plot(z, mu_lcdm, label="ΛCDM", color="C1")
+    plt.plot(z, mu_star, label="S.T.A.R.", color="C2", linestyle="--")
+    plt.xscale("log")
+    plt.xlabel("z")
+    plt.ylabel("Distance modulus μ")
+    plt.legend()
+    plt.tight_layout()
+
+    if output_dir:
+        outpath = os.path.join(output_dir, "hubble_diagram.png")
+        plt.savefig(outpath, dpi=200)
+    plt.close()
 
 
-def plot_hubble_diagram(df, lcdm, star):
-    z = df["z"].values
-    mu_obs = df["mu"].values
-    sigma = df["sigma_mu"].values
+def plot_residuals(df, lcdm, star, output_dir=None):
+    """
+    Plot residuals (data - model) for ΛCDM and S.T.A.R.
+    Signature: plot_residuals(df, lcdm, star, output_dir=None)
+    """
+    _ensure_outdir(output_dir)
+
+    z = np.array(df["z"])
+    mu_obs = np.array(df["mu"])
+    sigma = np.array(df["sigma_mu"])
 
     mu_lcdm = np.array([lcdm.distance_modulus(zi) for zi in z])
     mu_star = np.array([star.distance_modulus(zi) for zi in z])
 
-    plt.figure(figsize=(10,6))
-    plt.errorbar(z, mu_obs, sigma, fmt="o", label="Data", alpha=0.6)
-    plt.plot(z, mu_lcdm, label="ΛCDM", lw=2)
-    plt.plot(z, mu_star, label="S.T.A.R.", lw=2)
-    plt.xlabel("Redshift z")
-    plt.ylabel("Distance Modulus μ")
-    plt.legend()
-    plt.grid()
-    plt.tight_layout()
-    plt.show()
+    res_lcdm = mu_obs - mu_lcdm
+    res_star = mu_obs - mu_star
 
-
-def plot_Hz(models, labels, zmax=2):
-    z = np.linspace(0, zmax, 200)
-    plt.figure(figsize=(10,6))
-    for model, label in zip(models, labels):
-        H = np.array([model.H(zi) for zi in z])
-        plt.plot(z, H, label=label, lw=2)
+    plt.figure(figsize=(10, 4))
+    plt.errorbar(z, res_lcdm, yerr=sigma, fmt=".", label="Data - ΛCDM", alpha=0.6)
+    plt.errorbar(z, res_star, yerr=sigma, fmt=".", label="Data - S.T.A.R.", alpha=0.6)
+    plt.xscale("log")
+    plt.axhline(0, color="k", lw=0.8)
     plt.xlabel("z")
-    plt.ylabel("H(z)")
+    plt.ylabel("Residual μ (mag)")
     plt.legend()
-    plt.grid()
     plt.tight_layout()
-    plt.show()
+
+    if output_dir:
+        outpath = os.path.join(output_dir, "residuals.png")
+        plt.savefig(outpath, dpi=200)
+    plt.close()
 
 
-def plot_residuals(df, lcdm, star):
-    z = df["z"].values
-    mu_obs = df["mu"].values
+def plot_Hz(models, labels, output_dir=None):
+    """
+    Plot H(z) for a list of model objects over a redshift grid.
+    Signature: plot_Hz(models, labels, output_dir=None)
+    """
+    _ensure_outdir(output_dir)
 
-    mu_lcdm = np.array([lcdm.distance_modulus(zi) for zi in z])
-    mu_star = np.array([star.distance_modulus(zi) for zi in z])
-
-    plt.figure(figsize=(10,4))
-    plt.scatter(z, mu_obs - mu_lcdm, s=10, label="Obs - ΛCDM")
-    plt.scatter(z, mu_obs - mu_star, s=10, label="Obs - S.T.A.R.")
-    plt.axhline(0, color="black", lw=1)
+    zgrid = np.linspace(0.001, 2.5, 300)
+    plt.figure(figsize=(8, 5))
+    for model, lab in zip(models, labels):
+        Hz = np.array([model.H(z) for z in zgrid])
+        plt.plot(zgrid, Hz, label=lab)
     plt.xlabel("z")
-    plt.ylabel("Residual μ")
+    plt.ylabel("H(z) [km/s/Mpc]")
     plt.legend()
-    plt.grid()
     plt.tight_layout()
-    plt.show()
 
-
-def plot_corner(chain, labels):
-    fig = corner.corner(chain, labels=labels, show_titles=True)
-    fig.tight_layout()
-    return fig
+    if output_dir:
+        outpath = os.path.join(output_dir, "Hz_comparison.png")
+        plt.savefig(outpath, dpi=200)
+    plt.close()
