@@ -2,7 +2,7 @@
 ---
 
 # **The S.T.A.R. Program**  
-## **Symbolic–Topological–Arithmetic–Relativity Model for Cosmology**
+## **Symbolic–Topological–Arithmetic–Relativity Model**
 ### **A Proposed Model for Mathematical & Theoretical Physics to Address the Hubble–Planck Tension**
 
 ---
@@ -181,7 +181,7 @@ If you use the S.T.A.R. Program, ACSC, ECC, or any associated data pipelines, pl
 
 ```
 McNamara, P. J. (2026).
-The S.T.A.R. Model: A Symbolic–Topological–Arithmetic–Relativity Model for Cosmology.
+The S.T.A.R. Program: A Symbolic–Topological–Arithmetic–Relativity Model.
 GitHub Repository.
 https://github.com/LcosmosS/S.T.A.R.-Model-for-Mathematical-and-Theoretical-Physics
 ```
@@ -191,7 +191,7 @@ BibTeX:
 ```bibtex
 @misc{mcnamara2026star,
   author       = {Patrick J. McNamara},
-  title        = {The S.T.A.R. Program: A Symbolic--Topological--Arithmetic--Relativity Model for Cosmology},
+  title        = {The S.T.A.R. Program: A Symbolic--Topological--Arithmetic--Relativity Model},
   year         = {2026},
   howpublished = {\url{https://github.com/LcosmosS/S.T.A.R.-Model-for-Mathematical-and-Theoretical-Physics}},
   note         = {Combined ACSC + ECC Framework}
