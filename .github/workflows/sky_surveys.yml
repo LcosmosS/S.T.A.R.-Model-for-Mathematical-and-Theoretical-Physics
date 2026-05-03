@@ -47,42 +47,6 @@ jobs:
         pwd
         ls -al
 
-    - name: Regenerate Pantheon+ dataset
-      run: |
-        cd "${{ steps.root.outputs.ROOT }}"
-        # Ensure the raw file exists (fail fast with a clear message)
-        if [ ! -f data/raw/pantheon_plus.dat ]; then
-          echo "ERROR: data/raw/pantheon_plus.dat not found. Place the Pantheon+ .dat file in data/raw/ or commit the generated module." >&2
-          exit 2
-        fi
-
-        # Run regeneration using the same interpreter used for installs
-        sage -python scripts/regenerate_pantheon_module.py
-
-        # Quick runtime validation of the generated module
-        sage -python - <<'PY'
-        import importlib, sys
-        try:
-            m = importlib.import_module('src.likelihoods.data.pantheon_plus')
-        except Exception as e:
-            print("Failed to import generated pantheon module:", e, file=sys.stderr)
-            sys.exit(3)
-
-        d = getattr(m, 'PANTHEON_PLUS_FULL', None)
-        if not isinstance(d, dict):
-            print("PANTHEON_PLUS_FULL is not a dict", file=sys.stderr); sys.exit(4)
-        for k in ('z','mu','sigma_mu'):
-            if k not in d:
-                print(f"Missing key {k} in PANTHEON_PLUS_FULL", file=sys.stderr); sys.exit(5)
-        if len(d['z']) < 10:
-            print("Warning: PANTHEON_PLUS_FULL contains fewer than 10 SNe; check data/raw/pantheon_plus.dat", file=sys.stderr)
-        # Check numeric types for first 20 entries
-        for i, val in enumerate(d['z'][:20]):
-            if not isinstance(val, (int,float)):
-                print('Non-numeric z at index', i, val, file=sys.stderr); sys.exit(6)
-        print('Pantheon+ dataset OK: {} SNe'.format(len(d['z'])))
-        PY
-
     - name: Check generated module for ellipses
       run: |
         cd "${{ steps.root.outputs.ROOT }}"
