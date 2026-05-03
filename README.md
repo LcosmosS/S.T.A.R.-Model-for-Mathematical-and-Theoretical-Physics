@@ -27,7 +27,7 @@ Together, these form a dual‑layer architecture:
 - **ACSC** provides the *geometric projection law* mapping elliptic curve invariants into a cosmological manifold.  
 - **ECC** provides the *entropy‑cohomological conservation law* governing symbolic information flow across that manifold.
 
-The S.T.A.R. Model proposes that the **large‑scale structure of the universe**, the **effective expansion rate**, and the **Hubble–Planck tension** arise from the interaction between:
+The S.T.A.R. Program proposes that the **large‑scale structure of the universe**, the **effective expansion rate**, and the **Hubble–Planck tension** arise from the interaction between:
 
 - arithmetic projection geometry  
 - entropy curvature  
