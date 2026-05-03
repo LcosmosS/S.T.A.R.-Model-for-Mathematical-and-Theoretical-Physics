@@ -16,17 +16,51 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+from pathlib import Path
+import logging
+
+logger = logging.getLogger(__name__)
+
+def _find_repo_root(start_path: Path) -> Path:
+    """
+    Walk upward from start_path and return the first directory that looks like the repo root.
+    Looks for .git, pyproject.toml, setup.cfg, or README.md as markers.
+    Falls back to parents[3] if nothing is found.
+    """
+    markers = {".git", "pyproject.toml", "setup.cfg", "README.md", "README.rst", "README.md"}
+    for parent in [start_path] + list(start_path.parents):
+        for marker in markers:
+            if (parent / marker).exists():
+                return parent
+    # conservative fallback: go up 3 levels from module (handles src/likelihoods/data)
+    try:
+        return start_path.parents[3]
+    except IndexError:
+        return start_path.resolve().parents[-1]
+
 def load_pantheon_plus():
-    # Locate CSV relative to package root (two levels up from this file)
-    pkg_root = Path(__file__).resolve().parent.parent.parent
-    csv_path = pkg_root / "data" / "processed" / "pantheon_plus.csv"
+    # compute repo root relative to this file
+    module_file = Path(__file__).resolve()
+    repo_root = _find_repo_root(module_file.parent)
+    csv_path = repo_root / "data" / "processed" / "pantheon_plus.csv"
 
     if not csv_path.exists():
+        # helpful debug message for CI logs
         logger.warning("Pantheon+ CSV not found at %s", csv_path)
-        # Return an empty but well-typed dataset so imports don't crash.
-        return {"z": [], "mu": [], "sigma_mu": []}
+        # also log the repo_root and a short listing to help debugging
+        try:
+            listing = [p.name for p in (repo_root / "data").iterdir()]
+        except Exception:
+            listing = None
+        logger.debug("Repo root resolved to %s; data/ listing: %s", repo_root, listing)
+        raise FileNotFoundError(f"Pantheon+ CSV not found at {csv_path}")
 
-    # Read as a comma-separated CSV (the file you provided uses commas)
+    # load CSV as before (example using pandas)
+    import pandas as pd
+    df = pd.read_csv(csv_path)
+    return df
+
+    # Read as a comma-separated CSV 
     try:
         df = pd.read_csv(csv_path)
     except Exception as e:
