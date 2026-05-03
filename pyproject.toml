@@ -38,3 +38,6 @@ line_length = 88
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 
+[project.scripts]
+star-run-inference = "src.cli.star_run_inference:main"
+
