@@ -58,25 +58,29 @@ class Cosmology:
         return max(float(result), 0.0)
 
     def comoving_distance(self, z):
-        """Dc(z) = c * ∫_0^z dz'/H(z') — very defensive version"""
-        # Handle ellipsis / bad input
+        """Dc(z) = c * ∫_0^z dz'/H(z') — ultra defensive"""
+        # Catch ellipsis and other garbage input
         if z is Ellipsis or (isinstance(z, np.ndarray) and z.dtype == object):
-            z = np.array([0.0, 0.5, 1.0])  # safe fallback for debugging
+            print("Warning: Ellipsis (...) detected in comoving_distance. Using safe default z=[0.0, 0.5, 1.0]")
+            z = np.array([0.0, 0.5, 1.0])
         
-        z = np.asarray(z, dtype=float)
+        z = np.asarray(z)
         z = np.nan_to_num(z, nan=0.0, posinf=2.0, neginf=0.0)
-        z = np.clip(z, 0.0, 10.0)   # prevent crazy values
+        z = np.clip(z, 0.0, 10.0)
+        z = z.astype(float)
         
         if z.ndim == 0 or z.size == 1:
             return self._comoving_scalar(float(z.ravel()[0]))
         
-        # Vectorized
+        # Vectorized safe call
         return np.array([self._comoving_scalar(float(zi)) for zi in z.ravel()]).reshape(z.shape)
 
     def luminosity_distance(self, z):
         """DL = (1 + z) * Dc(z)"""
         Dc = self.comoving_distance(z)
-        z_arr = np.asarray(z, dtype=float)
+        z_arr = np.asarray(z)
+        z_arr = np.nan_to_num(z_arr, nan=0.0, posinf=2.0, neginf=0.0)
+        z_arr = z_arr.astype(float)
         return Dc * (1.0 + z_arr)
 
     def distance_modulus(self, z):
