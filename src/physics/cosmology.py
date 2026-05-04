@@ -18,7 +18,7 @@ class Cosmology:
 
     def __init__(self, H_expr: str, params: dict):
         self.H_expr = H_expr
-        self.params = params.copy() if params is not None else {}
+        self.params = {k: float(v) for k, v in (params or {}).items()}
 
         # symbolic variable and expression
         z = sp.symbols("z")
@@ -29,10 +29,11 @@ class Cosmology:
 
         # lambdify: (z, *params) -> numeric
         try:
-            self.H = sp.lambdify((z, *self.params.keys()), self.H_sym, modules=["numpy"])
+            keys = tuple(self.params.keys())
+        self.H = sp.lambdify((z, *keys), self.H_sym, modules=["numpy"])
         except Exception as e:
             raise RuntimeError(f"Failed to lambdify H_expr: {e}")
-
+        
     def H_of_z(self, z):
         """
         Evaluate H(z) numerically.
@@ -42,6 +43,14 @@ class Cosmology:
         """
         try:
             raw = self.H(z, *self.params.values())
+            arr = np.asarray(raw)
+            if arr.dtype == object:
+                sample = arr.ravel()[:6].tolist()
+                raise RuntimeError(f"H(z) returned object-dtype values (sample={sample}). Check H_expr and params.")
+            arr = arr.astype(float)
+            if arr.shape == () or arr.size == 1:
+                return float(arr)
+            return arr
         except Exception as e:
             raise RuntimeError(f"H(z) evaluation error at z={z!r}: {e}")
 
