@@ -9,7 +9,7 @@ to src/likelihoods/data/pantheon_plus_full.py
 import pandas as pd
 from pathlib import Path
 
-RAW = Path("data/raw/pantheon_plus.dat")
+RAW = Path("data/processed/pantheon_plus.csv")
 OUT = Path("src/likelihoods/data/pantheon_plus_full.py")
 
 def main():
