@@ -48,16 +48,16 @@ class Cosmology:
         # Convert to numpy array for checks
         arr = np.asarray(raw)
 
-        # If lambdify returned an object array containing Ellipsis/None, fail clearly
+        # If object dtype, try to coerce elements to float and fail with clear message if not possible
         if arr.dtype == object:
             flat = arr.ravel()
             if any((v is Ellipsis or v is None) for v in flat):
                 raise RuntimeError("H(z) evaluation returned Ellipsis or None; check symbolic expression and params.")
-            # try to coerce object array to float
             try:
                 arr = arr.astype(float)
             except Exception:
-                raise RuntimeError("H(z) returned non-numeric object array; check expression and parameter types.")
+                sample = flat[:5].tolist()
+                raise RuntimeError(f"H(z) returned non-numeric objects: sample={sample!r}. Check H_expr and params.")
 
         # Now arr is numeric. If scalar-like, return scalar float
         if arr.shape == () or arr.size == 1:
@@ -68,7 +68,7 @@ class Cosmology:
         return arr.astype(float)
 
     def _comoving_scalar(self, zi: float) -> float:
-        """Compute comoving distance for a single scalar zi."""
+        """Compute comoving distance for a single scalar zi with strict checks."""
         if not np.isfinite(zi):
             raise ValueError(f"Invalid redshift z={zi!r}; must be finite.")
         if zi < 0:
@@ -76,7 +76,7 @@ class Cosmology:
 
         def integrand(zp):
             try:
-                Hz_val = self.H_of_z(zp)
+                Hz_val = self.H_of_z(float(zp))
             except Exception as e:
                 raise RuntimeError(f"H(z) evaluation failed at z={zp}: {e}")
 
@@ -97,8 +97,8 @@ class Cosmology:
         except Exception as e:
             raise RuntimeError(f"Integration of 1/H(z) failed for z={zi}: {e}")
 
-        if not np.isfinite(result):
-            raise RuntimeError(f"Integration produced non-finite result for z={zi}: {result!r}")
+        if not np.isfinite(result) or result <= 0.0:
+            raise RuntimeError(f"Integration produced non-positive or non-finite result for z={zi}: {result!r}")
 
         return float(result)
 
@@ -159,3 +159,4 @@ class Cosmology:
         if np.any(np.asarray(DL_pc) <= 0):
             raise RuntimeError("Luminosity distance must be positive to compute distance modulus.")
         return 5.0 * (np.log10(DL_pc) - 1.0)
+
