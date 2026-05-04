@@ -58,14 +58,14 @@ class Cosmology:
         return max(float(result), 0.0)
 
         def comoving_distance(self, z):
-        """Dc(z) = c * ∫_0^z dz'/H(z') — very defensive version"""
-        # Handle ellipsis / bad input
-        if z is Ellipsis or (isinstance(z, np.ndarray) and z.dtype == object):
+            """Dc(z) = c * ∫_0^z dz'/H(z') — very defensive version"""
+            # Handle ellipsis / bad input
+            if z is Ellipsis or (isinstance(z, np.ndarray) and z.dtype == object):
             z = np.array([0.0, 0.5, 1.0])  # safe fallback for debugging
         
-        z = np.asarray(z, dtype=float)
-        z = np.nan_to_num(z, nan=0.0, posinf=2.0, neginf=0.0)
-        z = np.clip(z, 0.0, 10.0)   # prevent crazy values
+            z = np.asarray(z, dtype=float)
+            z = np.nan_to_num(z, nan=0.0, posinf=2.0, neginf=0.0)
+            z = np.clip(z, 0.0, 10.0)   # prevent crazy values
         
         if z.ndim == 0 or z.size == 1:
             return self._comoving_scalar(float(z.ravel()[0]))
