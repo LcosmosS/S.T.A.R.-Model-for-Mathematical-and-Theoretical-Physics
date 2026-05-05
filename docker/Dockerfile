@@ -19,7 +19,6 @@ RUN mkdir -p /var/lib/apt/lists/partial \
     ca-certificates wget curl git build-essential cmake pkg-config \
     libffi-dev libssl-dev \
  && rm -rf /var/lib/apt/lists/*
- && rm -rf __pycache__ */__pycache__ */*/__pycache__
 
 # Create conda env and install binary TDA packages from conda-forge
 RUN micromamba create -y -n ${CONDA_ENV} python=${PYTHON_VERSION} -c conda-forge \
