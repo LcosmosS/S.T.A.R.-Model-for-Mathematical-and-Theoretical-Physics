@@ -4,13 +4,17 @@ on: [push, pull_request]
 
 permissions:
   contents: read
+  packages: write
   
 jobs:
   test:
     runs-on: ubuntu-latest
+    container:
+      image: sagemath/sagemath:latest
+      options: --user root
     strategy:
       matrix:
-        python-version: ["3.10", "3.11"]
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v6
