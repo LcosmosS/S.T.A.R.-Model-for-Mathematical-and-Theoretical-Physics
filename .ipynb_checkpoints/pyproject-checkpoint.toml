@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "star"
+version = "0.1.0"
+description = "S.T.A.R. Model utilities for projection, quantile alignment, and TDA pipelines"
+authors = [{name = "Patrick J. McNamara", email = "pmqr771@gmail.com"}]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+
+dependencies = [
+  "numpy>=1.26.0,<2.0",
+  "pandas>=2.2.0,<3.0",
+  "scipy>=1.11.0,<2.0",
+  "sympy>=1.12",
+  "corner>=2.2.1"
+]
+
+[project.optional-dependencies]
+tda = ["gudhi>=3.10.0", "ripser==0.6.14", "persim==0.3.8"]
+dev = ["pytest", "pytest-cov", "black", "isort", "pre-commit"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+
+[project.scripts]
+star-run-inference = "src.cli.star_run_inference:main"
+
