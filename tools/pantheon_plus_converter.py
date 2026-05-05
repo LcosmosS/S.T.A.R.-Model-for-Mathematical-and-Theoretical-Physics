@@ -5,6 +5,7 @@ import os
 
 OUTPUT = "src/likelihoods/data/pantheon_plus_full.py"
 
+
 def main():
     # Path to the official Pantheon+ FITS file
     fits_path = "data/pantheon_plus/Pantheon+SH0ES.fits"
@@ -32,6 +33,7 @@ def main():
         f.write("}\n")
 
     print(f"Pantheon+ dataset written to {OUTPUT}")
+
 
 if __name__ == "__main__":
     main()
