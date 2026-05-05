@@ -115,7 +115,7 @@ jobs:
         path: current/
 
     - name: Download previous artifacts
-      uses: dawidd6/action-download-artifact@v3
+      uses: dawidd6/action-download-artifact@v6
       with:
         workflow: notebooks.yml
         branch: main
