@@ -14,6 +14,7 @@ USER root
 
 # Minimal system deps
 RUN mkdir -p /var/lib/apt/lists/partial \
+ && rm -rf __pycache__ */__pycache__ */*/__pycache__
  && apt-get update \
  && apt-get install -y --no-install-recommends \
     ca-certificates wget curl git build-essential cmake pkg-config \
