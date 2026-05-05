@@ -1,5 +1,6 @@
 from sageall import CremonaDatabase
 
+
 def main():
     db = CremonaDatabase()
     labels = []
@@ -15,6 +16,7 @@ def main():
 
     for L in labels[:1000]:
         print(L)
+
 
 if __name__ == "__main__":
     main()

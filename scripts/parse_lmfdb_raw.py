@@ -8,7 +8,7 @@ import os
 NUM_CORES = 4
 CHUNK_SIZE = 400
 OUTPUT_CREMONA = "cremona_raw_parsed.csv"
-OUTPUT_LMFDB   = "lmfdb_raw_parsed.csv"
+OUTPUT_LMFDB = "lmfdb_raw_parsed.csv"
 # ======================================================
 
 print("=== CREMONA (already done) ===")
@@ -22,26 +22,38 @@ else:
 print("\n=== LMFDB EXTRACTION (lmfdb-lite) ===")
 from lmf import db as lmfdb_db
 
+
 def lmfdb_batch(start, batch_size=10000):
     query = {"conductor": {"$gte": start, "$lt": start + batch_size}}
-    results = list(lmfdb_db.ec_curvedata.search(
-        query,
-        ["lmfdb_label", "conductor", "absD", "rank", "ainvs"]   # ← exact column names from your list
-    ))
+    results = list(
+        lmfdb_db.ec_curvedata.search(
+            query,
+            [
+                "lmfdb_label",
+                "conductor",
+                "absD",
+                "rank",
+                "ainvs",
+            ],  # ← exact column names from your list
+        )
+    )
     rows = []
     for r in results:
-        rows.append({
-            "label": r.get("lmfdb_label"),
-            "conductor": int(r.get("conductor", 0)),
-            "delta": int(r.get("absD", 0)),           # absolute discriminant = |Δ|
-            "rank": int(r.get("rank", -1)),
-            "a_invariants_raw": str(r.get("ainvs", [])),
-        })
+        rows.append(
+            {
+                "label": r.get("lmfdb_label"),
+                "conductor": int(r.get("conductor", 0)),
+                "delta": int(r.get("absD", 0)),  # absolute discriminant = |Δ|
+                "rank": int(r.get("rank", -1)),
+                "a_invariants_raw": str(r.get("ainvs", [])),
+            }
+        )
     return rows
+
 
 all_lmfdb = []
 BATCH_SIZE = 10000
-max_cond = 500000   # increase to 1_000_000+ if you want more curves
+max_cond = 500000  # increase to 1_000_000+ if you want more curves
 
 for start in tqdm(range(1, max_cond, BATCH_SIZE), desc="LMFDB batches"):
     batch = lmfdb_batch(start, BATCH_SIZE)

@@ -5,6 +5,7 @@ Read a cleaned CSV (z,mu,sigma_mu) and write an importable Python module:
 The module will export:
   PANTHEON_PLUS_FULL = {"z": [...], "mu": [...], "sigma_mu": [...]}
 """
+
 from pathlib import Path
 import pandas as pd
 import sys
@@ -18,19 +19,19 @@ if not CSV.exists():
 
 # Read CSV robustly; allow for a truncated final line
 try:
-    df = pd.read_csv(CSV, usecols=["z","mu","sigma_mu"])
+    df = pd.read_csv(CSV, usecols=["z", "mu", "sigma_mu"])
 except ValueError:
     # If header or column names differ, try to read all and pick first three columns
     df = pd.read_csv(CSV)
-    if set(["z","mu","sigma_mu"]).issubset(df.columns):
-        df = df[["z","mu","sigma_mu"]]
+    if set(["z", "mu", "sigma_mu"]).issubset(df.columns):
+        df = df[["z", "mu", "sigma_mu"]]
     else:
         # fallback: assume first three columns are z, mu, sigma_mu
         df = df.iloc[:, :3]
-        df.columns = ["z","mu","sigma_mu"]
+        df.columns = ["z", "mu", "sigma_mu"]
 
 # Coerce to numeric and drop invalid rows
-for c in ["z","mu","sigma_mu"]:
+for c in ["z", "mu", "sigma_mu"]:
     df[c] = pd.to_numeric(df[c], errors="coerce")
 df = df.dropna().reset_index(drop=True)
 

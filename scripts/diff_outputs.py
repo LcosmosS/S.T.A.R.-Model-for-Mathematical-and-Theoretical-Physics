@@ -26,11 +26,13 @@ FILES_TO_COMPARE = [
 # UTILITIES
 # ------------------------------
 
+
 def safe_load_csv(path):
     try:
         return pd.read_csv(path)
     except Exception:
         return None
+
 
 def safe_load_json(path):
     try:
@@ -39,15 +41,18 @@ def safe_load_json(path):
     except Exception:
         return None
 
+
 def safe_load_npy(path):
     try:
         return np.load(path, allow_pickle=True)
     except Exception:
         return None
 
+
 def write(report_dir, name, text):
     with open(report_dir / name, "w") as f:
         f.write(text)
+
 
 def numeric_diff(a, b):
     """Return max absolute and relative diff."""
@@ -59,9 +64,11 @@ def numeric_diff(a, b):
     rel_diff = np.max(np.abs(a - b) / (np.abs(b) + 1e-12))
     return abs_diff, rel_diff
 
+
 # ------------------------------
 # MAIN DIFF LOGIC
 # ------------------------------
+
 
 def diff_csv(current, previous):
     if current is None or previous is None:
@@ -82,12 +89,13 @@ def diff_csv(current, previous):
 
     # Determine if any diff exceeds tolerance
     fail = any(
-        ("abs=" in d and float(d.split("abs=")[1].split(",")[0]) > TOL_ABS) or
-        ("rel=" in d and float(d.split("rel=")[1]) > TOL_REL)
+        ("abs=" in d and float(d.split("abs=")[1].split(",")[0]) > TOL_ABS)
+        or ("rel=" in d and float(d.split("rel=")[1]) > TOL_REL)
         for d in diffs
     )
 
     return "\n".join(diffs), fail
+
 
 def diff_json(current, previous):
     if current is None or previous is None:
@@ -123,6 +131,7 @@ def diff_json(current, previous):
 
     return "\n".join(diffs), fail
 
+
 def diff_npy(current, previous):
     if current is None or previous is None:
         return "Missing NPY file", True
@@ -131,9 +140,11 @@ def diff_npy(current, previous):
     fail = absd > TOL_ABS or reld > TOL_REL
     return f"abs={absd:.3e}, rel={reld:.3e}", fail
 
+
 # ------------------------------
 # ENTRY POINT
 # ------------------------------
+
 
 def main():
     if len(sys.argv) != 4:
@@ -172,6 +183,7 @@ def main():
     else:
         print("No significant regressions detected.")
         sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

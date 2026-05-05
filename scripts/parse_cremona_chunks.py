@@ -1,5 +1,5 @@
-# Save this as parse_cremona_chunks.py in your repo and run it on the host. 
-#It reads cremona_db_copy/cremona/curvedata/* (or curvedata.gz) and writes cremona_raw_parsed.csv with parsed fields and the raw line.
+# Save this as parse_cremona_chunks.py in your repo and run it on the host.
+# It reads cremona_db_copy/cremona/curvedata/* (or curvedata.gz) and writes cremona_raw_parsed.csv with parsed fields and the raw line.
 # python3 parse_cremona_chunks.py
 
 # parse_cremona_chunks.py
@@ -7,6 +7,7 @@ import os, gzip, csv, re, sys
 
 CREM = "cremona_db_copy/cremona"
 OUT = "cremona_raw_parsed.csv"
+
 
 def iter_files():
     gz = os.path.join(CREM, "curvedata.gz")
@@ -23,6 +24,7 @@ def iter_files():
     if os.path.isfile(top):
         yield top
 
+
 label_re = re.compile(r"^\s*([0-9]+[a-z]\d+)\b", re.I)
 ainv_re = re.compile(r"\[(-?\d+(?:,\s*-?\d+)*)\]")
 j_re = re.compile(r"j[_ ]?invariant[:=]?\s*([0-9Ee\+\-\.]+)|j\s*=\s*([0-9Ee\+\-\.]+)")
@@ -31,7 +33,16 @@ cond_from_label = re.compile(r"^([0-9]+)")
 
 with open(OUT, "w", newline="", encoding="utf-8") as outf:
     writer = csv.writer(outf)
-    writer.writerow(["label","conductor","a_invariants_raw","j_raw","discriminant_raw","raw_line"])
+    writer.writerow(
+        [
+            "label",
+            "conductor",
+            "a_invariants_raw",
+            "j_raw",
+            "discriminant_raw",
+            "raw_line",
+        ]
+    )
     for path in iter_files():
         print("Reading", path, file=sys.stderr)
         opener = gzip.open if path.endswith(".gz") else open

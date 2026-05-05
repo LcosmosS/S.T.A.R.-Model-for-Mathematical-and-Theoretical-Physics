@@ -13,6 +13,7 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 PLANCK_CHAIN_ZIP = DATA_DIR / "COM_CosmoParams_base-plikHM-TTTEEE-lowl-lowE_R3.00.zip"
 BAO_ZIP = DATA_DIR / "bao_data-master.zip"
 
+
 def write_module(name, obj):
     path = OUT_DIR / f"{name}.py"
     with open(path, "w") as f:
@@ -21,21 +22,22 @@ def write_module(name, obj):
         json.dump(obj, f, indent=2)
         f.write("\n")
 
+
 # -----------------------------
 # 1. Extract BAO + CC data
 # -----------------------------
 with zipfile.ZipFile(BAO_ZIP, "r") as z:
     z.extractall(DATA_DIR / "bao_data-master")
 
-cc_path = DATA_DIR  / "cc" / "Hz_Moresco2022.dat"
+cc_path = DATA_DIR / "cc" / "Hz_Moresco2022.dat"
 bao_dir = DATA_DIR / "bao_data-master" / "BAO"
 
 # Cosmic Chronometers
 cc = np.loadtxt(cc_path)
 COSMIC_CHRONOMETERS = {
-    "z": cc[:,0].tolist(),
-    "H": cc[:,1].tolist(),
-    "sigma_H": cc[:,2].tolist()
+    "z": cc[:, 0].tolist(),
+    "H": cc[:, 1].tolist(),
+    "sigma_H": cc[:, 2].tolist(),
 }
 write_module("cosmic_chronometers", COSMIC_CHRONOMETERS)
 
@@ -60,7 +62,7 @@ DESI_BAO_DR1 = {
     "DM_over_rd": DM_list,
     "sigma_DM": DM_err,
     "H_rd": Hrd_list,
-    "sigma_H": Hrd_err
+    "sigma_H": Hrd_err,
 }
 write_module("desi_bao_dr1", DESI_BAO_DR1)
 
@@ -74,8 +76,8 @@ PLANCK_2015_PRIORS = {
     "cov": [
         [0.00053, 0.00211, -0.000001],
         [0.00211, 0.08912, -0.000012],
-        [-0.000001, -0.000012, 0.00000004]
-    ]
+        [-0.000001, -0.000012, 0.00000004],
+    ],
 }
 write_module("planck_2015", PLANCK_2015_PRIORS)
 
@@ -103,20 +105,20 @@ if len(samples) == 0:
 
 samples = np.vstack(samples)
 
-ombh2 = samples[:,0]
-omegach2 = samples[:,1]
-H0 = samples[:,2]
-theta = samples[:,3]
+ombh2 = samples[:, 0]
+omegach2 = samples[:, 1]
+H0 = samples[:, 2]
+theta = samples[:, 3]
 
 # Compute R and lA (approximate)
-R = np.sqrt((ombh2 + omegach2) * (H0/100)**2) * theta
+R = np.sqrt((ombh2 + omegach2) * (H0 / 100) ** 2) * theta
 lA = np.pi / theta
 
 PLANCK_2018_RECON_PRIORS = {
     "R": float(np.mean(R)),
     "lA": float(np.mean(lA)),
     "ombh2": float(np.mean(ombh2)),
-    "cov": np.cov(np.vstack([R, lA, ombh2])).tolist()
+    "cov": np.cov(np.vstack([R, lA, ombh2])).tolist(),
 }
 
 write_module("planck_2018_recon", PLANCK_2018_RECON_PRIORS)
