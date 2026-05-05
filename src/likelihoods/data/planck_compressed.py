@@ -20,7 +20,13 @@ def load_planck_compressed(version: str = "main"):
     if main_file.exists():
         print(f" Loading Planck compressed data: {main_file.name}")
         
-        df = pd.read_csv(main_file, delim_whitespace=True, comment='#', header=None)
+        df = pd.read_csv(
+                    main_file,
+                    sep=r"\s+",
+                    comment="#",
+                    header=None,
+                    engine="python"
+                )
         
         # Take first 3 columns (z, mu, sigma_mu or equivalent)
         if df.shape[1] >= 3:
