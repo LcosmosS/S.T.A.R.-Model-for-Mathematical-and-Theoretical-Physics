@@ -18,7 +18,7 @@ def load_planck_compressed(version: str = "main"):
     main_file = planck_dir / "base_plikHM_TTTEEE_lowl_lowE_1.txt"
     
     if main_file.exists():
-        print(f"✅ Loading Planck compressed data: {main_file.name}")
+        print(f" Loading Planck compressed data: {main_file.name}")
         
         df = pd.read_csv(main_file, delim_whitespace=True, comment='#', header=None)
         
@@ -38,7 +38,7 @@ def load_planck_compressed(version: str = "main"):
         else:
             raise ValueError(f"Unexpected format in {main_file}")
     else:
-        print("⚠️ Planck compressed file not found. Using synthetic data.")
+        print(" Planck compressed file not found. Using synthetic data.")
         return pd.DataFrame({
             "z": np.linspace(0.1, 2.0, 30),
             "mu": np.linspace(34.0, 48.0, 30) + np.random.normal(0, 0.15, 30),
