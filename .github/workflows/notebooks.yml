@@ -28,6 +28,12 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Debug paths
+        run: |
+          echo "PWD: $(pwd)"
+          echo "Listing /__w:"
+          ls -R /__w || true      
+           
       - name: Install Git and update submodules
         run: |
           apt-get update && apt-get install -y git
