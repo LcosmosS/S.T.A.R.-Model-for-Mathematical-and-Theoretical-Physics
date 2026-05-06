@@ -9,7 +9,7 @@ description = "S.T.A.R. Model utilities for projection, quantile alignment, and 
 authors = [{name = "Patrick J. McNamara", email = "pmqr771@gmail.com"}]
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 
 dependencies = [
   "numpy>=1.26.0,<2.0",
@@ -28,7 +28,7 @@ where = ["src"]
 
 [tool.black]
 line-length = 88
-target-version = ["py310"]
+target-version = ["py312"]
 
 [tool.isort]
 profile = "black"
