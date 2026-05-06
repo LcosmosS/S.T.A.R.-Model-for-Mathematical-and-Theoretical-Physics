@@ -24,44 +24,35 @@ jobs:
       - name: Checkout repository with submodules
         uses: actions/checkout@v6
         with:
-          submodules: recursive   # ← Important: pulls ecdata, eclib, lmfdb
+          submodules: recursive
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-          ssh-strict: false
+
+      - name: Install modern Git + update submodules
+        run: |
+          apt-get update && apt-get install -y git
+          git --version
+          git submodule update --init --recursive --depth=1
+
+      - name: Verify submodules
+        run: |
+          echo "=== Submodule Status ==="
+          ls -la data/ecdata data/eclib data/lmfdb 2>/dev/null || echo "Some submodules missing"
+          echo "ecdata count:" $(find data/ecdata -name "*.txt" | wc -l 2>/dev/null || echo 0)
 
       - name: Install system tools
         run: |
           apt-get update
-          apt-get install -y git curl pandoc \
-            texlive texlive-latex-extra texlive-xetex
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+          apt-get install -y pandoc texlive texlive-latex-extra texlive-xetex
 
       - name: Install Python dependencies
         run: |
-          sage -python -m pip install --upgrade pip setuptools wheel
+          sage -python -m pip install --upgrade pip
           sage -python -m pip install --no-cache-dir \
-            numpy pandas tqdm scikit-learn plotly==5.18.0 \
-            corner ripser persim nbconvert nbclient ipykernel nest_asyncio
+            numpy pandas tqdm plotly==5.18.0 corner ripser persim \
+            nbconvert nbclient ipykernel nest_asyncio
 
-      - name: Prepare IPython runtime
-        run: |
-          export IPYTHONDIR=/tmp/.ipython
-          mkdir -p "$IPYTHONDIR"
-          chmod -R 0777 "$IPYTHONDIR"
-          echo "IPYTHONDIR=$IPYTHONDIR" >> $GITHUB_ENV
-
-      - name: Verify submodules
-        run: |
-          echo "=== Submodules Status ==="
-          ls -la data/ecdata data/eclib data/lmfdb 2>/dev/null || echo "Some submodules missing"
-          echo "ecdata files:" $(find data/ecdata -name "*.txt" | wc -l)
-          echo "eclib files:"  $(find data/eclib  -name "*.txt" | wc -l)
-
-      - name: Clear Python cache
+      - name: Clear cache
         run: rm -rf __pycache__ */__pycache__ */*/__pycache__
 
       - name: Execute notebooks
@@ -81,7 +72,6 @@ jobs:
           mkdir -p exports
           for nb in examples/*-executed.ipynb; do
             base=$(basename "$nb" .ipynb)
-            echo "Exporting $nb"
             sage -python -m jupyter nbconvert --to html "$nb" --output-dir exports --output "${base}.html"
             sage -python -m jupyter nbconvert --to pdf  "$nb" --output-dir exports --output "${base}.pdf"
           done
