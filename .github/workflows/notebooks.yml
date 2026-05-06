@@ -33,15 +33,11 @@ jobs:
           apt-get update && apt-get install -y git
           git --version
           
-          echo "Current directory: $(pwd)"
-          echo "Expected repo path: $REPO_PATH"
-          
-          # Force correct directory
-          cd $REPO_PATH
+          echo "cd $REPO_PATH"
           git status
           
           echo "Updating submodules..."
-          git submodule update --init --recursive --depth=1
+          git submodule update --init --recursive
           
           echo "=== Submodule Status ==="
           ls -la data/ecdata data/eclib data/lmfdb 2>/dev/null || echo "Submodules not found"
