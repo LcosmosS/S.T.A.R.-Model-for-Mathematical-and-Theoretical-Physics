@@ -33,7 +33,12 @@ jobs:
           echo "PWD: $(pwd)"
           echo "Listing /__w:"
           ls -R /__w || true      
-           
+
+      - name: Verify repo
+        run: |
+          echo "PWD: $(pwd)"
+          git rev-parse --is-inside-work-tree
+          
       - name: Install Git and update submodules
         run: |
           apt-get update && apt-get install -y git
