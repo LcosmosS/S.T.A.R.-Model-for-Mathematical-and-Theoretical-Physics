@@ -20,23 +20,19 @@ class JointLikelihood:
         self.cc_like = cc_like
 
     def __call__(self, theta):
-        """theta should be parameter array, NOT model"""
-        if not isinstance(theta, (list, tuple, np.ndarray)):
-            # If someone passed a model by mistake
-            print("WARNING: JointLikelihood received model instead of theta")
-            return -np.inf
-
+        """theta must be parameter vector"""
+        theta = np.asarray(theta, dtype=float).flatten()
+        
         try:
-            logp_planck = self.planck_like(theta) if hasattr(self.planck_like, '__call__') else 0.0
-            logp_bao   = self.bao_like(theta) if hasattr(self.bao_like, '__call__') else 0.0
-            logp_cc    = self.cc_like(theta) if hasattr(self.cc_like, '__call__') else 0.0
-
+            logp_planck = self.planck_like(theta)   # pass theta, not model
+            logp_bao    = self.bao_like(theta)
+            logp_cc     = self.cc_like(theta)
+            
             total = logp_planck + logp_bao + logp_cc
-
-            print(f"JointLikelihood: Planck={logp_planck:.4f}, BAO={logp_bao:.4f}, CC={logp_cc:.4f} | Total={total:.4f}")
-
+            
+            print(f"  Planck: {logp_planck:.4f} | BAO: {logp_bao:.4f} | CC: {logp_cc:.4f} | Total: {total:.4f}")
             return total if np.isfinite(total) else -np.inf
-
+            
         except Exception as e:
-            print(f"JointLikelihood error: {e}")
+            print(f"JointLikelihood ERROR: {e}")
             return -np.inf
