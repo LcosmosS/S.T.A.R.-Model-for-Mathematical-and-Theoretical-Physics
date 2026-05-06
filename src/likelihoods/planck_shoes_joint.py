@@ -9,6 +9,17 @@ Supports:
 Works with embedded Python dictionaries or legacy CSV files.
 """
 
+"""
+Planck + SH0ES Joint Likelihood
+===============================
+
+Supports:
+- Planck compressed distance priors (2015 or 2018 reconstructed)
+- SH0ES H0 measurement
+
+Works with embedded Python dictionaries or legacy CSV files.
+"""
+
 from __future__ import annotations
 import numpy as np
 import pandas as pd
