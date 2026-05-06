@@ -40,7 +40,7 @@ This repository contains the **full theoretical monographs**, **computational to
 
 ## **Core Idea**
 
-The S.T.A.R. Program asserts that the universe behaves as a **Symbolic Field**, where:
+The S.T.A.R. Program asserts that the universe can be projected as a **Symbolic Field**, where:
 
 - arithmetic invariants  
 - entropy curvature  
