@@ -24,12 +24,6 @@ jobs:
       - name: Run tests
         run: python3 -m pytest -q
 
-      - name: Verify sky survey datasets exist
-        shell: bash -l {0}
-        run: |
-          ls -lh data/raw/*2MASS* || exit 1
-          ls -lh data/raw/*SIMBAD* || exit 1
-
       - name: Upload sky survey datasets
         uses: actions/upload-artifact@v4
         with:
@@ -38,6 +32,11 @@ jobs:
             data/raw/JApJ94494_2MASS_GAIADR3_EPOCH.csv
             data/raw/DESIDR8_SDSSDR16_SIMBAD.csv
 
+      - name: Verify sky survey datasets exist
+        shell: bash -l {0}
+        run: |
+          ls -lh data/raw/*JApJ94494_2MASS_GAIADR3_EPOCH.csv* || exit 1
+          ls -lh data/raw/*DESIDR8_SDSSDR16_SIMBAD.csv* || exit 1
 
   build_cosmology_data:
     runs-on: ubuntu-latest
