@@ -1,4 +1,4 @@
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/LcosmosS/S.T.A.R.-Program/HEAD?urlpath=%2Fdoc%2Ftree%2Fexamples%2F00_visualizations.ipynb)
+
 ---
 
 # **The S.T.A.R. Program**  
