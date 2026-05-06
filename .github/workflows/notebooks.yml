@@ -21,14 +21,13 @@ jobs:
       DEBIAN_FRONTEND: noninteractive
 
     steps:
-      - name: Checkout repository with submodules
+      - name: Checkout repository
         uses: actions/checkout@v6
         with:
-          submodules: recursive
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install modern Git + update submodules
+      - name: Install modern Git and update submodules
         run: |
           apt-get update && apt-get install -y git
           git --version
@@ -37,8 +36,9 @@ jobs:
       - name: Verify submodules
         run: |
           echo "=== Submodule Status ==="
-          ls -la data/ecdata data/eclib data/lmfdb 2>/dev/null || echo "Some submodules missing"
-          echo "ecdata count:" $(find data/ecdata -name "*.txt" | wc -l 2>/dev/null || echo 0)
+          echo "ecdata  files:" $(find data/ecdata  -type f | wc -l 2>/dev/null || echo 0)
+          echo "eclib   files:" $(find data/eclib   -type f | wc -l 2>/dev/null || echo 0)
+          echo "lmfdb   files:" $(find data/lmfdb   -type f | wc -l 2>/dev/null || echo 0)
 
       - name: Install system tools
         run: |
@@ -47,12 +47,19 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          sage -python -m pip install --upgrade pip
+          sage -python -m pip install --upgrade pip setuptools wheel
           sage -python -m pip install --no-cache-dir \
-            numpy pandas tqdm plotly==5.18.0 corner ripser persim \
-            nbconvert nbclient ipykernel nest_asyncio
+            numpy pandas tqdm plotly==5.18.0 corner>=2.2.1 \
+            ripser persim nbconvert nbclient ipykernel nest_asyncio
 
-      - name: Clear cache
+      - name: Prepare IPython runtime
+        run: |
+          export IPYTHONDIR=/tmp/.ipython
+          mkdir -p "$IPYTHONDIR"
+          chmod -R 0777 "$IPYTHONDIR"
+          echo "IPYTHONDIR=$IPYTHONDIR" >> $GITHUB_ENV
+
+      - name: Clear Python cache
         run: rm -rf __pycache__ */__pycache__ */*/__pycache__
 
       - name: Execute notebooks
@@ -72,6 +79,7 @@ jobs:
           mkdir -p exports
           for nb in examples/*-executed.ipynb; do
             base=$(basename "$nb" .ipynb)
+            echo "Exporting $nb"
             sage -python -m jupyter nbconvert --to html "$nb" --output-dir exports --output "${base}.html"
             sage -python -m jupyter nbconvert --to pdf  "$nb" --output-dir exports --output "${base}.pdf"
           done
