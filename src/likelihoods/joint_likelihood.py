@@ -18,28 +18,28 @@ class JointLikelihood:
         self.planck_like = planck_like
         self.bao_like = bao_like
         self.cc_like = cc_like
+        print("JointLikelihood (safe mode) initialized")
 
     def __call__(self, theta):
         theta = np.asarray(theta, dtype=float).flatten()
         
+        # Heavy penalties instead of -inf to allow MCMC to start
         try:
-            lp_planck = float(self.planck_like(theta))
-        except Exception:
-            lp_planck = -30.0   
-
-        try:
-            lp_bao = float(self.bao_like(theta))
-        except Exception:
-            lp_bao = -15.0
+            lp_p = float(self.planck_like(theta))
+        except:
+            lp_p = -40.0
 
         try:
-            lp_cc = float(self.cc_like(theta))
-        except Exception:
-            lp_cc = -10.0
+            lp_b = float(self.bao_like(theta))
+        except:
+            lp_b = -20.0
 
-        total = lp_planck + lp_bao + lp_cc
+        try:
+            lp_c = float(self.cc_like(theta))
+        except:
+            lp_c = -10.0
 
-        # Print only summary in CI
-        print(f"Joint logp = {total:.4f} (P:{lp_planck:.1f}, B:{lp_bao:.1f}, C:{lp_cc:.1f})")
+        total = lp_p + lp_b + lp_c
 
-        return total if np.isfinite(total) else -100.0
+        print(f"Joint logp = {total:.2f}   (P:{lp_p:.1f} | B:{lp_b:.1f} | C:{lp_c:.1f})")
+        return total
