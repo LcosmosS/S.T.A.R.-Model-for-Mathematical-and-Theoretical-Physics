@@ -25,12 +25,12 @@ class JointLikelihood:
         try:
             lp_planck = float(self.planck_like(theta))
         except Exception:
-            lp_planck = -50.0   # heavy but finite penalty
+            lp_planck = -30.0   
 
         try:
             lp_bao = float(self.bao_like(theta))
         except Exception:
-            lp_bao = -20.0
+            lp_bao = -15.0
 
         try:
             lp_cc = float(self.cc_like(theta))
