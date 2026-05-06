@@ -39,7 +39,7 @@ jobs:
           apt-get update && apt-get install -y git
           git --version
           
-          echo "cd $REPO_PATH"
+          echo "Current directory: $(pwd)"
           git status
           
           echo "Updating submodules..."
@@ -66,7 +66,6 @@ jobs:
 
       - name: Execute notebooks
         run: |
-          cd $REPO_PATH
           mkdir -p results exports
           for nb in examples/*.ipynb; do
             echo "Running $nb"
@@ -79,7 +78,6 @@ jobs:
 
       - name: Export HTML and PDF
         run: |
-          cd $REPO_PATH
           mkdir -p exports
           for nb in examples/*-executed.ipynb; do
             base=$(basename "$nb" .ipynb)
@@ -92,6 +90,6 @@ jobs:
         with:
           name: notebook-outputs
           path: |
-            ${{ env.REPO_PATH }}/results/
-            ${{ env.REPO_PATH }}/examples/*-executed.ipynb
-            ${{ env.REPO_PATH }}/exports/
+            results/
+            examples/*-executed.ipynb
+            exports/
