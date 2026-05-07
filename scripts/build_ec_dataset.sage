@@ -1,194 +1,161 @@
-#!/usr/bin/env sage -python
-# -*- coding: utf-8 -*-
-
-"""
-Build a cross-referenced elliptic curve dataset (~40k rows) with:
-- label
-- conductor
-- discriminant (Delta)
-- j-invariant
-- omega (real period)
-- torsion order
-- product of Tamagawa numbers
-- algebraic rank (Sage)
-- analytic rank (PARI)
-- 2-Selmer rank (PARI-backed)
-- optional: Sha order (if available)
-- optional: simple Heegner height (if computable)
-
-Usage (example):
-
-    sage -python scripts/build_ec_dataset.sage \
-        --labels-file data/raw/curve_labels.csv \
-        --output data/processed/ec_invariants_full.csv \
-        --batch-size 500
-
-The labels file must have a column named 'label' with Cremona/LMFDB labels.
-"""
-
-import sys, os, csv, argparse, math, time
-from sageall import (
-    EllipticCurve,
-    pari,
-    ZZ,
-)
+import sys, os, csv, json, argparse, time
+from sageall import EllipticCurve, pari, ZZ
 
 # ----------------------------------------------------------------------
-# PARI configuration: high two_seconds, no practical timeout
+# PARI configuration
 # ----------------------------------------------------------------------
-pari.default('two_seconds', 10**9)   # effectively "no timeout"
-# You can also tweak other defaults if needed:
-# pari.default('primelimit', 10**7)
+pari.default('two_seconds', 10**9)
 
 # ----------------------------------------------------------------------
-# Argument parsing
+# Paths to submodules
 # ----------------------------------------------------------------------
-def parse_args():
-    p = argparse.ArgumentParser(description="Build elliptic curve invariant dataset.")
-    p.add_argument(
-        "--labels-file",
-        type=str,
-        required=True,
-        help="CSV file with at least a 'label' column (Cremona/LMFDB labels).",
-    )
-    p.add_argument(
-        "--output",
-        type=str,
-        required=True,
-        help="Output CSV path.",
-    )
-    p.add_argument(
-        "--batch-size",
-        type=int,
-        default=500,
-        help="Number of curves per write batch.",
-    )
-    return p.parse_args()
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ECDATA_ROOT = os.path.join(REPO_ROOT, "data", "ecdata")
+ECLIB_ROOT  = os.path.join(REPO_ROOT, "data", "eclib")
+LMFDB_ROOT  = os.path.join(REPO_ROOT, "data", "lmfdb")
 
 # ----------------------------------------------------------------------
-# Helpers
+# Load Cremona ecdata
 # ----------------------------------------------------------------------
-def safe_float(x):
+def load_cremona_from_ecdata(label):
+    """
+    Load a curve from data/ecdata/<conductor>/<isogeny>/<label>
+    Returns dict with keys:
+        a_invariants, conductor, torsion, ...
+    or None if not found.
+    """
     try:
-        return float(x)
-    except Exception:
+        N, iso, num = label.split()
+    except:
+        # Cremona labels are like "11a1"
+        # Parse manually
+        import re
+        m = re.match(r"(\d+)([a-z]+)(\d+)", label)
+        if not m:
+            return None
+        N, iso, num = m.groups()
+
+    path = os.path.join(ECDATA_ROOT, N, iso, f"{N}{iso}{num}")
+    if not os.path.exists(path):
         return None
 
-def compute_invariants_for_label(label):
+    data = {}
+    with open(path) as f:
+        for line in f:
+            if line.startswith("a-invariants"):
+                parts = line.split(":")[1].strip().split()
+                data["a_invariants"] = list(map(int, parts))
+            elif line.startswith("conductor"):
+                data["conductor"] = int(line.split(":")[1])
+            elif line.startswith("torsion"):
+                data["torsion"] = int(line.split(":")[1])
+            elif line.startswith("tamagawa"):
+                data["tamagawa"] = int(line.split(":")[1])
+
+    return data if "a_invariants" in data else None
+
+# ----------------------------------------------------------------------
+# Load LMFDB JSON
+# ----------------------------------------------------------------------
+def load_lmfdb(label):
     """
-    Given a Cremona/LMFDB label, construct E and compute:
-    - conductor
-    - discriminant
-    - j-invariant
-    - omega (real period)
-    - torsion order
-    - Tamagawa product
-    - algebraic rank (Sage)
-    - analytic rank (PARI)
-    - 2-Selmer rank (PARI-backed)
-    - Sha order (if available)
-    - simple Heegner height (if computable; placeholder)
+    Load curve from data/lmfdb/elliptic_curves/<N>/<iso>/<label>.json
     """
-    row = {
-        "label": label,
-        "conductor": None,
-        "discriminant": None,
-        "j_invariant": None,
-        "omega_real": None,
-        "torsion_order": None,
-        "tamagawa_product": None,
-        "rank_algebraic": None,
-        "rank_analytic_pari": None,
-        "selmer2_rank_pari": None,
-        "sha_order": None,
-        "heegner_height": None,
+    try:
+        import re
+        m = re.match(r"(\d+)([a-z]+)(\d+)", label)
+        if not m:
+            return None
+        N, iso, num = m.groups()
+    except:
+        return None
+
+    json_path = os.path.join(
+        LMFDB_ROOT, "elliptic_curves", N, iso, f"{label}.json"
+    )
+    if not os.path.exists(json_path):
+        return None
+
+    with open(json_path) as f:
+        j = json.load(f)
+
+    return {
+        "a_invariants": j["ainvs"],
+        "conductor": j["conductor"],
+        "torsion": j["torsion_order"],
+        "tamagawa": j.get("tamagawa_product"),
+        "rank_lmfdb": j.get("rank"),
     }
 
+# ----------------------------------------------------------------------
+# Compute invariants
+# ----------------------------------------------------------------------
+def compute_invariants(label):
+    row = {"label": label}
+
+    # Try Cremona ecdata
+    data = load_cremona_from_ecdata(label)
+
+    # If not found, try LMFDB
+    if data is None:
+        data = load_lmfdb(label)
+
+    if data is None:
+        row["error"] = "Curve not found in ecdata or lmfdb"
+        return row
+
+    # Build curve
     try:
-        E = EllipticCurve(label)
+        E = EllipticCurve(data["a_invariants"])
     except Exception as e:
-        row["error"] = f"EllipticCurve init failed: {e}"
+        row["error"] = f"Failed to construct curve: {e}"
         return row
 
     # Basic invariants
     try:
         row["conductor"] = int(E.conductor())
-    except Exception:
-        pass
-
-    try:
         row["discriminant"] = int(E.discriminant())
-    except Exception:
-        pass
+        row["j_invariant"] = int(E.j_invariant())
+        row["torsion_order"] = int(E.torsion_order())
+        row["omega_real"] = float(E.period_lattice().real_period())
+        row["tamagawa_product"] = int(E.tamagawa_product())
+    except Exception as e:
+        row["error"] = f"Invariant error: {e}"
 
-    try:
-        row["j_invariant"] = E.j_invariant()
-    except Exception:
-        pass
-
-    try:
-        row["omega_real"] = safe_float(E.real_period())
-    except Exception:
-        pass
-
-    try:
-        row["torsion_order"] = int(E.torsion_subgroup().order())
-    except Exception:
-        pass
-
-    try:
-        tams = E.tamagawa_numbers()
-        prod_tam = 1
-        for t in tams:
-            prod_tam *= int(t)
-        row["tamagawa_product"] = prod_tam
-    except Exception:
-        pass
-
-    # Algebraic rank (Sage)
+    # Algebraic rank
     try:
         row["rank_algebraic"] = int(E.rank())
-    except Exception:
-        pass
+    except Exception as e:
+        row["error"] = f"rank error: {e}"
 
     # Analytic rank via PARI
     try:
-        # Convert to PARI elliptic curve
         gE = pari(E)
-        # ellrankinit returns structure; ellrank extracts analytic rank
-        # This uses PARI's analytic machinery with our high two_seconds.
         rdata = gE.ellrankinit()
-        r_analytic = gE.ellrank(rdata)
-        row["rank_analytic_pari"] = int(r_analytic)
+        row["rank_analytic_pari"] = int(gE.ellrank(rdata))
     except Exception as e:
         row["rank_analytic_pari_error"] = str(e)
 
-    # 2-Selmer rank via Sage (PARI-backed)
+    # 2-Selmer rank
     try:
-        # This is typically PARI-backed under the hood.
-        s2 = E.selmer_rank(2)
-        row["selmer2_rank_pari"] = int(s2)
+        row["selmer2_rank_pari"] = int(E.selmer_rank(2))
     except Exception as e:
         row["selmer2_rank_pari_error"] = str(e)
 
-    # Sha order (if available; can be expensive)
+    # Sha
     try:
         sha = E.sha()
         if sha is not None:
             row["sha_order"] = int(sha.order())
-    except Exception:
-        # Many curves will not have Sha computed; that's fine.
+    except:
         pass
 
-    # Heegner height (very rough placeholder; you can refine)
+    # Heegner height (placeholder)
     try:
-        # This is a placeholder: you can choose discriminants and compute
-        # actual Heegner points; here we just record canonical height of a generator if any.
         gens = E.gens()
         if gens:
-            P = gens[0]
-            row["heegner_height"] = safe_float(E.height(P))
-    except Exception:
+            row["heegner_height"] = float(E.height(gens[0]))
+    except:
         pass
 
     return row
@@ -197,25 +164,21 @@ def compute_invariants_for_label(label):
 # Main
 # ----------------------------------------------------------------------
 def main():
-    args = parse_args()
+    p = argparse.ArgumentParser()
+    p.add_argument("--labels-file", required=True)
+    p.add_argument("--output", required=True)
+    p.add_argument("--batch-size", type=int, default=500)
+    args = p.parse_args()
 
     labels = []
-    with open(args.labels_file, newline="", encoding="utf-8") as f:
+    with open(args.labels_file) as f:
         reader = csv.DictReader(f)
-        if "label" not in reader.fieldnames:
-            raise ValueError("labels-file must have a 'label' column.")
         for r in reader:
-            lab = r["label"].strip()
-            if lab:
-                labels.append(lab)
+            labels.append(r["label"])
 
-    print(f"Loaded {len(labels)} labels from {args.labels_file}")
-
-    # Prepare output
-    out_path = args.output
-    out_dir = os.path.dirname(out_path)
+    out_dir = os.path.dirname(args.output)
     if out_dir and not os.path.exists(out_dir):
-        os.makedirs(out_dir, exist_ok=True)
+        os.makedirs(out_dir)
 
     fieldnames = [
         "label",
@@ -235,39 +198,29 @@ def main():
         "selmer2_rank_pari_error",
     ]
 
-    # If file exists, we append; else we create and write header
-    write_header = not os.path.exists(out_path)
+    write_header = not os.path.exists(args.output)
 
-    processed = 0
-    t0 = time.time()
-
-    with open(out_path, "a", newline="", encoding="utf-8") as f_out:
+    with open(args.output, "a") as f_out:
         writer = csv.DictWriter(f_out, fieldnames=fieldnames)
         if write_header:
             writer.writeheader()
 
         batch = []
-        for i, lab in enumerate(labels, start=1):
-            row = compute_invariants_for_label(lab)
+        t0 = time.time()
+
+        for i, lab in enumerate(labels, 1):
+            row = compute_invariants(lab)
             batch.append(row)
 
             if len(batch) >= args.batch_size:
                 writer.writerows(batch)
-                f_out.flush()
-                processed += len(batch)
                 batch = []
-                dt = time.time() - t0
-                print(f"[{processed}/{len(labels)}] curves processed in {dt:.1f}s")
+                print(f"[{i}/{len(labels)}] processed")
 
-        # Flush remaining
         if batch:
             writer.writerows(batch)
-            f_out.flush()
-            processed += len(batch)
 
-    dt = time.time() - t0
-    print(f"Done. Processed {processed} curves in {dt:.1f}s")
-    print(f"Output written to: {out_path}")
+    print("Done.")
 
 if __name__ == "__main__":
     main()
