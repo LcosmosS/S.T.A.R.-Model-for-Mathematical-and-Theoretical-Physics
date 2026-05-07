@@ -7,6 +7,7 @@ ECDATA_ROOT = os.path.join(REPO_ROOT, "data", "ecdata")
 
 LABEL_RE = re.compile(r"(\d+)([a-z]+)(\d+)$")
 
+
 def extract_labels_from_ecdata():
     """
     Walk data/ecdata/<N>/<iso>/<label>
@@ -14,7 +15,9 @@ def extract_labels_from_ecdata():
     """
     labels = []
 
-    for N in sorted(os.listdir(ECDATA_ROOT), key=lambda x: int(x) if x.isdigit() else x):
+    for N in sorted(
+        os.listdir(ECDATA_ROOT), key=lambda x: int(x) if x.isdigit() else x
+    ):
         N_path = os.path.join(ECDATA_ROOT, N)
         if not os.path.isdir(N_path):
             continue

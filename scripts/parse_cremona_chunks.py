@@ -7,6 +7,7 @@ CURVEDATA_DIR = os.path.join(REPO_ROOT, "data", "ecdata", "curvedata")
 
 LABEL_RE = re.compile(r"(\d+)([a-z]+)(\d+)$")
 
+
 def extract_labels_from_chunks():
     """
     Parse data/ecdata/curvedata/curvedata.*

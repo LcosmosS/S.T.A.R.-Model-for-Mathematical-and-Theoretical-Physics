@@ -18,6 +18,7 @@ CURVEDATA_DIR = os.path.join(REPO_ROOT, "data", "ecdata", "curvedata")
 if not os.path.isdir(CURVEDATA_DIR):
     raise RuntimeError(f"curvedata directory not found: {CURVEDATA_DIR}")
 
+
 # ----------------------------------------------------------------------
 # Parse a single curvedata line
 # Format example:
@@ -37,7 +38,7 @@ def parse_curvedata_line(line):
     ainvs = list(map(int, ainv_match.group(1).split(",")))
 
     # Extract conductor (next integer after ainvs)
-    rest = line[line.index("]") + 1:].strip().split()
+    rest = line[line.index("]") + 1 :].strip().split()
     try:
         conductor = int(rest[0])
     except:
@@ -49,6 +50,7 @@ def parse_curvedata_line(line):
         "conductor": conductor,
         "raw": line.strip(),
     }
+
 
 # ----------------------------------------------------------------------
 # Load all curvedata.* chunk files
@@ -67,6 +69,7 @@ def load_all_curvedata():
                         rows.append(row)
     return rows
 
+
 # ----------------------------------------------------------------------
 # Build in-memory database
 # ----------------------------------------------------------------------
@@ -78,6 +81,7 @@ by_label = {r["label"]: r for r in rows}
 
 # Expose available columns
 search_cols = ["label", "ainvs", "conductor", "raw"]
+
 
 # ----------------------------------------------------------------------
 # Public API (mimics lmf.db.ec_curvedata)
@@ -100,6 +104,7 @@ class CurveDataDB:
         for key, val in kwargs.items():
             results = [r for r in results if r.get(key) == val]
         return results
+
 
 db = CurveDataDB(rows, by_label)
 
