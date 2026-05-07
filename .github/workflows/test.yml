@@ -14,7 +14,7 @@ jobs:
       options: --user root
     strategy:
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v6
@@ -31,6 +31,10 @@ jobs:
 
       - name: Check code style (skipped)
         run: echo "Black check skipped in CI; re-enable after local formatting"
+
+      - name: Check code style (py310)
+        if: ${{ matrix.python-version == '3.10' }}
+        run: black --check --target-version py310  tests/
         
       - name: Check code style (py311)
         if: ${{ matrix.python-version == '3.11' }}
@@ -38,7 +42,7 @@ jobs:
 
       - name: Check code style (py312)
         if: ${{ matrix.python-version == '3.12' }}
-        run: black --check --target-version py311  tests/
+        run: black --check --target-version py312  tests/
 
       - name: Run tests
         run: pytest -q || true
