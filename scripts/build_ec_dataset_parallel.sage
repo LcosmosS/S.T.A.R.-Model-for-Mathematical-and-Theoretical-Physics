@@ -1,23 +1,93 @@
-#!/usr/bin/env sage -python
-# -*- coding: utf-8 -*-
-
-import sys, os, csv, argparse, time
+import sys, os, csv, json, argparse, time
 from joblib import Parallel, delayed
 from sageall import EllipticCurve, pari
+
+# ----------------------------------------------------------------------
+# Submodule paths
+# ----------------------------------------------------------------------
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+ECDATA_ROOT = os.path.join(REPO_ROOT, "data", "ecdata")
+LMFDB_ROOT  = os.path.join(REPO_ROOT, "data", "lmfdb")
 
 # ----------------------------------------------------------------------
 # PARI defaults for each worker
 # ----------------------------------------------------------------------
 def init_pari():
-    pari.default('two_seconds', 10**9)     # effectively no timeout
+    pari.default('two_seconds', 10**9)
     pari.default('primelimit', 10**7)
     pari.default('seriesprecision', 50)
+
+# ----------------------------------------------------------------------
+# Load Cremona ecdata
+# ----------------------------------------------------------------------
+def load_cremona(label):
+    import re
+    m = re.match(r"(\d+)([a-z]+)(\d+)", label)
+    if not m:
+        return None
+    N, iso, num = m.groups()
+
+    path = os.path.join(ECDATA_ROOT, N, iso, f"{label}")
+    if not os.path.exists(path):
+        return None
+
+    data = {}
+    with open(path) as f:
+        for line in f:
+            if line.startswith("a-invariants"):
+                parts = line.split(":")[1].strip().split()
+                data["ainvs"] = list(map(int, parts))
+            elif line.startswith("conductor"):
+                data["conductor"] = int(line.split(":")[1])
+            elif line.startswith("torsion"):
+                data["torsion"] = int(line.split(":")[1])
+            elif line.startswith("tamagawa"):
+                data["tamagawa"] = int(line.split(":")[1])
+
+    return data if "ainvs" in data else None
+
+# ----------------------------------------------------------------------
+# Load LMFDB JSON
+# ----------------------------------------------------------------------
+def load_lmfdb(label):
+    import re
+    m = re.match(r"(\d+)([a-z]+)(\d+)", label)
+    if not m:
+        return None
+    N, iso, num = m.groups()
+
+    json_path = os.path.join(
+        LMFDB_ROOT, "elliptic_curves", N, iso, f"{label}.json"
+    )
+    if not os.path.exists(json_path):
+        return None
+
+    with open(json_path) as f:
+        j = json.load(f)
+
+    return {
+        "ainvs": j["ainvs"],
+        "conductor": j["conductor"],
+        "torsion": j["torsion_order"],
+        "tamagawa": j.get("tamagawa_product"),
+        "rank_lmfdb": j.get("rank"),
+    }
+
+# ----------------------------------------------------------------------
+# Unified loader
+# ----------------------------------------------------------------------
+def load_curve_data(label):
+    d = load_cremona(label)
+    if d is not None:
+        return d
+    return load_lmfdb(label)
 
 # ----------------------------------------------------------------------
 # Compute invariants for a single label
 # ----------------------------------------------------------------------
 def compute_one(label):
     init_pari()
+
     row = {
         "label": label,
         "conductor": None,
@@ -34,32 +104,36 @@ def compute_one(label):
         "error": None,
     }
 
+    # Load from submodules
+    data = load_curve_data(label)
+    if data is None:
+        row["error"] = "Curve not found in ecdata or lmfdb"
+        return row
+
+    # Construct curve
     try:
-        E = EllipticCurve(label)
+        E = EllipticCurve(data["ainvs"])
     except Exception as e:
         row["error"] = f"EllipticCurve init failed: {e}"
         return row
 
+    # Basic invariants
     try: row["conductor"] = int(E.conductor())
     except: pass
 
     try: row["discriminant"] = int(E.discriminant())
     except: pass
 
-    try: row["j_invariant"] = E.j_invariant()
+    try: row["j_invariant"] = int(E.j_invariant())
     except: pass
 
-    try: row["omega_real"] = float(E.real_period())
+    try: row["omega_real"] = float(E.period_lattice().real_period())
     except: pass
 
-    try: row["torsion_order"] = int(E.torsion_subgroup().order())
+    try: row["torsion_order"] = int(E.torsion_order())
     except: pass
 
-    try:
-        tams = E.tamagawa_numbers()
-        prod = 1
-        for t in tams: prod *= int(t)
-        row["tamagawa_product"] = prod
+    try: row["tamagawa_product"] = int(E.tamagawa_product())
     except: pass
 
     try: row["rank_algebraic"] = int(E.rank())
@@ -77,10 +151,10 @@ def compute_one(label):
     # 2-Selmer rank
     try:
         row["selmer2_rank_pari"] = int(E.selmer_rank(2))
-    except Exception as e:
-        row["selmer2_rank_pari"] = None
+    except:
+        pass
 
-    # Sha (optional)
+    # Sha
     try:
         sha = E.sha()
         if sha is not None:
@@ -88,7 +162,7 @@ def compute_one(label):
     except:
         pass
 
-    # Heegner height (simple proxy)
+    # Heegner height
     try:
         gens = E.gens()
         if gens:
