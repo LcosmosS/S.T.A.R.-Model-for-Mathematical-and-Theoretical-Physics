@@ -22,37 +22,55 @@ class JointLikelihood:
         print("JointLikelihood initialized successfully")
 
     def __call__(self, theta):
-        """theta = [H0, Ωm, ΩΛ, a, b]"""
+        """theta = [H0, Ωm, ΩΛ, a, b]
+
+        Robust wrapper: ensure we never return -inf/NaN and catch exceptions
+        from sub-likelihoods. Return a large finite negative floor on error.
+        """
         theta = np.asarray(theta, dtype=float).flatten()
-        
+        floor = -1e6
+
+        # Planck
         try:
             lp_p = float(self.planck_like(theta))
-        except:
-            lp_p = -40.0
+            if not np.isfinite(lp_p):
+                lp_p = floor
+        except Exception:
+            lp_p = floor
 
+        # BAO
         try:
             lp_b = float(self.bao_like(theta))
-        except:
-            lp_b = -20.0
+            if not np.isfinite(lp_b):
+                lp_b = floor / 10.0
+        except Exception:
+            lp_b = floor / 10.0
 
+        # Cosmic chronometers
         try:
             lp_c = float(self.cc_like(theta))
-        except:
-            lp_c = -10.0
+            if not np.isfinite(lp_c):
+                lp_c = floor / 100.0
+        except Exception:
+            lp_c = floor / 100.0
 
         total = lp_p + lp_b + lp_c
+        # Keep a concise debug line but avoid flooding logs in production.
         print(f"Joint logp = {total:.2f}  (P:{lp_p:.1f} B:{lp_b:.1f} C:{lp_c:.1f})")
-        return total
+        return float(total)
 
     def _log_posterior(self, theta):
-        """Extremely forgiving version"""
+        """Return a finite log-posterior for sampler internals.
+
+        This calls the public __call__ and guarantees a finite return value.
+        """
         try:
-            lp = float(self.__call__(theta))
+            lp = float(self(theta))
             if np.isfinite(lp):
                 return lp
-        except:
+        except Exception:
             pass
-        return -50.0   # finite penalty instead of -inf
+        return -1e6
 
     def run(self, theta0, nsteps=1500):
         theta0 = np.asarray(theta0, dtype=float).flatten()
