@@ -62,31 +62,72 @@ textsrc/
 examples/                  # Jupyter notebooks demonstrating key features
 data/                      # Raw and processed cosmological datasets
 ```
+
+### SageMath-Specific Notes
+
+Many symbolic and algebraic features rely on SageMath.
+Use SageMath kernels in Jupyter for best compatibility.
+When writing code that uses Sage features (RealNumber, Integer, symbolic rings, etc.), prefer explicit imports.
+Test notebooks with both standard Python and SageMath kernels when possible.
+
+### Citation Guidelines
+If your contribution results in academic output (papers, theses, presentations), please cite the project as:
+```bash
+bibtex@software{star_program,
+  author       = {LcosmosS and contributors},
+  title        = {S.T.A.R. Program: Symbolic--Topological--Arithmetic--Relativity Framework},
+  year         = {2025},
+  url          = {https://github.com/LcosmosS/S.T.A.R.-Program},
+  doi          = {TBD},
+}
+```
+We also encourage citing the foundational papers on ACSC and ECC once they are published. Contributors making significant theoretical or algorithmic contributions may be offered co-authorship on resulting publications.
+
+### Contributor Ladder & Governance
+We follow a lightweight, merit-based governance model:
+
+#### Roles
+
+- Maintainer: Final approval on PRs, strategic direction.
+- Core Contributor: Regular high-quality contributions, can review PRs.
+- Contributor: Anyone who has had a PR merged.
+
+### Recognition
+All contributors are listed in AUTHORS.md. Significant contributors (theoretical breakthroughs, major modules, sustained high-quality work) may be invited to join the core team.
+
 ### Pull Request Process
 
-Fork the repository and create a feature branch:
+1. Fork the repository and create a feature branch:
 ```bash
 git checkout -b feature/your-contribution-name
 ```
-Make your changes following the style guidelines below.
-Ensure all modified notebooks execute successfully.
-Submit a Pull Request with a clear title and description.
+2. Make your changes following the style guidelines below.
+3. Ensure all modified notebooks execute successfully.
+4. Submit a Pull Request with a clear title and description.
 
-### PR Requirements
+#### PR Requirements
 
-Clear motivation and description of changes
-All affected notebooks must run end-to-end
-Code must pass Black formatting
-Appropriate tests or validation (when applicable)
-Updated documentation where relevant
+1. Clear motivation and description of changes
+2. All affected notebooks must run end-to-end
+3. Code must pass Black formatting
+4. Appropriate tests or validation (when applicable)
+5. Updated documentation where relevant
 
+#### PR Checklist
+```
+[] Code passes Black formatting
+[] Notebooks run end-to-end without errors
+[] Appropriate docstrings and comments
+[] Follows SageMath compatibility practices (when applicable)
+[] Updates to documentation or citation files if relevant
+```
 ### Style Guide
 
-Code Formatting: Use Black with default settings.
-Docstrings: Google style.
-Type Hints: Encouraged for new code.
-Naming: Use descriptive variable and function names.
-Reproducibility: Prefer explicit seeds and deterministic behavior where possible.
+- Code Formatting: Use Black with default settings.
+- Docstrings: Google style.
+- Type Hints: Encouraged for new code.
+- Naming: Use descriptive variable and function names.
+- Reproducibility: Prefer explicit seeds and deterministic behavior where possible.
 
 ### Testing
 ```bash
@@ -97,6 +138,8 @@ Reproducibility: Prefer explicit seeds and deterministic behavior where possible
 All contributors will be acknowledged in the AUTHORS.md file and in relevant publications where appropriate. Significant theoretical or algorithmic contributions may warrant co-authorship on resulting papers.
 
 ### Questions?
-Feel free to open a Discussion or contact the maintainer.
+- Use GitHub Discussions for ideas, questions, or theoretical discussions.
+- or Feel free to contact the maintainer.
+- *For bugs or feature requests, open an Issue.*
 
 **Thank you for contributing to the advancement of mathematical and theoretical physics.**
